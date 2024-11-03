@@ -102,6 +102,7 @@ jobs:
       - name: Publish
         run: |
           dotnet publish -c Release -r "${{ matrix.platform.name }}" -o ./publish_ava/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded src/Ryujinx --self-contained -p:IncludeNativeLibrariesForSelfExtract=true
+          dotnet publish -c Release -r "${{ matrix.platform.name }}" -o ./publish_ava_ext_lib/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded src/Ryujinx --self-contained true
           dotnet publish -c Release -r "${{ matrix.platform.name }}" -o ./publish_sdl2_headless/publish -p:Version="${{ steps.version_info.outputs.build_version }}" -p:SourceRevisionId="${{ steps.version_info.outputs.git_short_hash }}" -p:DebugType=embedded src/Ryujinx.Headless.SDL2 --self-contained -p:IncludeNativeLibrariesForSelfExtract=true
 
       - name: Packing Windows builds
@@ -110,6 +111,11 @@ jobs:
           pushd publish_ava
           rm publish/libarmeilleure-jitsupport.dylib
           7z a ../release_output/ryujinx-${{ steps.version_info.outputs.build_version }}-${{ matrix.platform.zip_os_name }}.zip publish
+          popd
+
+          pushd publish_ava_ext_lib
+          rm publish/libarmeilleure-jitsupport.dylib
+          7z a ../release_output/ryujinx-extlib-${{ steps.version_info.outputs.build_version }}-${{ matrix.platform.zip_os_name }}.zip publish
           popd
 
           pushd publish_sdl2_headless
