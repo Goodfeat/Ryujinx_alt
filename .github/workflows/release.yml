@@ -33,8 +33,8 @@ jobs:
       - name: Get version info
         id: version_info
         run: |
-          echo "build_version=alpha-${{ env.RYUJINX_BASE_VERSION }}.${{ github.run_number }}" >> $GITHUB_OUTPUT
-          echo "prev_build_version=alpha-${{ env.RYUJINX_BASE_VERSION }}.$((${{ github.run_number }} - 1))" >> $GITHUB_OUTPUT
+          echo "build_version=${{ env.RYUJINX_BASE_VERSION }}.${{ github.run_number }}-alpha" >> $GITHUB_OUTPUT
+          echo "prev_build_version=alpha-${{ env.RYUJINX_BASE_VERSION }}.$((${{ github.run_number }}-alpha - 1))" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Create tag
@@ -223,8 +223,8 @@ jobs:
       - name: Get version info
         id: version_info
         run: |
-          echo "build_version=${{ env.RYUJINX_BASE_VERSION }}.${{ github.run_number }}" >> $GITHUB_OUTPUT
-          echo "prev_build_version=${{ env.RYUJINX_BASE_VERSION }}.$((${{ github.run_number }} - 1))" >> $GITHUB_OUTPUT
+          echo "build_version=${{ env.RYUJINX_BASE_VERSION }}.${{ github.run_number }}-alpha" >> $GITHUB_OUTPUT
+          echo "prev_build_version=${{ env.RYUJINX_BASE_VERSION }}.$((${{ github.run_number }}-alpha - 1))" >> $GITHUB_OUTPUT
           echo "git_short_hash=$(git rev-parse --short "${{ github.sha }}")" >> $GITHUB_OUTPUT
 
       - name: Configure for release
