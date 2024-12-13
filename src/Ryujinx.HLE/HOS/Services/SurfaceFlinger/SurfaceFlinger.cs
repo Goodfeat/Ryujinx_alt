@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Xml.Schema;
 using VSyncMode = Ryujinx.Common.Configuration.VSyncMode;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
@@ -304,15 +305,16 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             while (_isRunning)
             {
+                //continue;
                 long ticks = PerformanceCounter.ElapsedTicks;
 
                 if (_swapInterval == 0)
                 {
                     Compose();
 
-                    _device.System?.SignalVsync();
+                    //_device.System?.SignalVsync();
 
-                    _nextFrameEvent.WaitOne(17);
+                    _nextFrameEvent.WaitOne(2);//17
                     lastTicks = ticks;
                 }
                 else
@@ -355,6 +357,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     }
                 }
             }
+            int l = 0;
         }
 
         public void Compose()
@@ -392,6 +395,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     }
 
                     PostFrameBuffer(layer, item);
+                    
                 }
                 else if (acquireStatus != Status.NoBufferAvailaible && acquireStatus != Status.InvalidOperation)
                 {
@@ -399,10 +403,17 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 }
             }
         }
-
+        static int xx = 0;
         private void PostFrameBuffer(Layer layer, BufferItem item)
         {
-            int frameBufferWidth = item.GraphicBuffer.Object.Width;
+            TextureCallbackInformation textureCallbackInformation = new()
+            {
+                Layer = layer,
+                Item = item,
+            };
+            if (xx == 0)
+            {
+                int frameBufferWidth = item.GraphicBuffer.Object.Width;
             int frameBufferHeight = item.GraphicBuffer.Object.Height;
 
             int nvMapHandle = item.GraphicBuffer.Object.Buffer.Surfaces[0].NvMapHandle;
@@ -412,7 +423,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 nvMapHandle = item.GraphicBuffer.Object.Buffer.NvMapId;
             }
 
-            ulong bufferOffset = (ulong)item.GraphicBuffer.Object.Buffer.Surfaces[0].Offset;
+
+                ulong bufferOffset = (ulong)item.GraphicBuffer.Object.Buffer.Surfaces[0].Offset;
 
             NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(layer.Owner, nvMapHandle);
 
@@ -446,44 +458,49 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 aspectRatio.ToFloatX(),
                 aspectRatio.ToFloatY());
 
-            TextureCallbackInformation textureCallbackInformation = new()
-            {
-                Layer = layer,
-                Item = item,
-            };
 
-            if (_device.Gpu.Window.EnqueueFrameThreadSafe(
-                layer.Owner,
-                frameBufferAddress,
-                frameBufferWidth,
-                frameBufferHeight,
-                0,
-                false,
-                gobBlocksInY,
-                format,
-                bytesPerPixel,
-                crop,
-                AcquireBuffer,
-                ReleaseBuffer,
-                textureCallbackInformation))
-            {
-                if (item.Fence.FenceCount == 0)
+
+                if (_device.Gpu.Window.EnqueueFrameThreadSafe(
+                    layer.Owner,
+                    frameBufferAddress,
+                    frameBufferWidth,
+                    frameBufferHeight,
+                    0,
+                    false,
+                    gobBlocksInY,
+                    format,
+                    bytesPerPixel,
+                    crop,
+                    AcquireBuffer,
+                    ReleaseBuffer,
+                    textureCallbackInformation))
                 {
-                    _device.Gpu.Window.SignalFrameReady();
-                    _device.Gpu.GPFifo.Interrupt();
-                }
-                else
-                {
-                    item.Fence.RegisterCallback(_device.Gpu, (x) =>
+                    if (item.Fence.FenceCount == 0)
                     {
                         _device.Gpu.Window.SignalFrameReady();
                         _device.Gpu.GPFifo.Interrupt();
-                    });
+                    }
+                    else
+                    {
+                        item.Fence.RegisterCallback(_device.Gpu, (x) =>
+                        {
+                            _device.Gpu.Window.SignalFrameReady();
+                            _device.Gpu.GPFifo.Interrupt();
+                        });
+                    }
                 }
+                else
+                {
+                    ReleaseBuffer(textureCallbackInformation);
+                }
+                xx++;
             }
             else
             {
                 ReleaseBuffer(textureCallbackInformation);
+                xx++;
+                if (xx > 1000)
+                { xx = 0; }
             }
         }
 
