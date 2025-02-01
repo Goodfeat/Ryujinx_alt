@@ -165,7 +165,7 @@ namespace Ryujinx.Ava
             string overrideLocalConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ReleaseInformation.CustomConfigNameOverride);
             string overrideAppDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, ReleaseInformation.CustomConfigNameOverride);
         
-        
+            Logger.Notice.Print(LogClass.Application, $"Loading configuration (overrideAppDataConfigurationPath)from: {overrideAppDataConfigurationPath}");
         
             // Now load the configuration as the other subsystems are now registered
             if (File.Exists(localConfigurationPath))
