@@ -167,10 +167,12 @@ namespace Ryujinx.Ava
             if (File.Exists(localConfigurationPath))
             {
                 ConfigurationPath = localConfigurationPath;
+                OverrideConfigurationPath = localConfigurationPath;
             }
             else if (File.Exists(appDataConfigurationPath))
             {
                 ConfigurationPath = appDataConfigurationPath;
+                OverrideConfigurationPath = overrideAppDataConfigurationPath;
             }
 
             if (ConfigurationPath == null)
@@ -181,7 +183,7 @@ namespace Ryujinx.Ava
 
                 ConfigurationState.Instance.LoadDefault();
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(overrideAppDataConfigurationPath);
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(OverrideConfigurationPath);
             }
             else
             {
@@ -190,7 +192,7 @@ namespace Ryujinx.Ava
                 if (ConfigurationFileFormat.TryLoad(ConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
                 {
                     ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
-                    ConfigurationState.Instance.ToFileFormat().SaveConfig(overrideAppDataConfigurationPath);
+                    ConfigurationState.Instance.ToFileFormat().SaveConfig(OverrideConfigurationPath);
                 }
                 else
                 {
@@ -207,11 +209,22 @@ namespace Ryujinx.Ava
                 if (File.Exists(overrideLocalConfigurationPath))
                 {
                     ConfigurationPath = overrideLocalConfigurationPath;
+                    Logger.Notice.Print(LogClass.Application, $"(args)Loading configuration (Local) from: {ConfigurationPath}");
+
+                }
+                else
+                {
+                    Logger.Notice.Print(LogClass.Application, $"File not found(Local): {overrideLocalConfigurationPath}");
                 }
 
                 if (File.Exists(overrideAppDataConfigurationPath))
                 {
                     ConfigurationPath = overrideAppDataConfigurationPath;
+                    Logger.Notice.Print(LogClass.Application, $"(args)Loading configuration(AppData) from: {ConfigurationPath}");
+                }
+                else
+                {
+                    Logger.Notice.Print(LogClass.Application, $"File not found(AppData): {overrideAppDataConfigurationPath}");
                 }
             }
 
