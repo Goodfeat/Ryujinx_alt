@@ -29,6 +29,7 @@ namespace Ryujinx.Common
             !ReleaseChannelSourceRepo.StartsWith("%%") &&
             !ReleaseChannelRepo.StartsWith("%%") &&
             !ConfigFileName.StartsWith("%%");
+            !ConfigFileNameOverride.StartsWith("%%");
 
         public static bool IsCanaryBuild => IsValid && ReleaseChannelName.Equals(CanaryChannel);
         
