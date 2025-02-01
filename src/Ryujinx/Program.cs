@@ -158,54 +158,49 @@ namespace Ryujinx.Ava
        public static void ReloadConfig()
        {
         
-            string OverrideConfigurationPath = "";
             string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ReleaseInformation.ConfigName);
             string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, ReleaseInformation.ConfigName);
-        
+
             string overrideLocalConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ReleaseInformation.CustomConfigNameOverride);
             string overrideAppDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, ReleaseInformation.CustomConfigNameOverride);
-        
-            Logger.Notice.Print(LogClass.Application, $"Loading configuration (overrideAppDataConfigurationPath)from: {overrideAppDataConfigurationPath}");
-        
+
             // Now load the configuration as the other subsystems are now registered
             if (File.Exists(localConfigurationPath))
             {
                 ConfigurationPath = localConfigurationPath;
-                OverrideConfigurationPath = localConfigurationPath;
             }
             else if (File.Exists(appDataConfigurationPath))
             {
                 ConfigurationPath = appDataConfigurationPath;
-                OverrideConfigurationPath = overrideAppDataConfigurationPath;
             }
-        
+
             if (ConfigurationPath == null)
             {
                 // No configuration, we load the default values and save it to disk
                 ConfigurationPath = appDataConfigurationPath;
                 Logger.Notice.Print(LogClass.Application, $"No configuration file found. Saving default configuration to: {ConfigurationPath}");
-        
+
                 ConfigurationState.Instance.LoadDefault();
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(OverrideConfigurationPath);
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(overrideAppDataConfigurationPath);
             }
             else
             {
                 Logger.Notice.Print(LogClass.Application, $"Loading configuration from: {ConfigurationPath}");
-        
+
                 if (ConfigurationFileFormat.TryLoad(ConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
                 {
                     ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
-                    ConfigurationState.Instance.ToFileFormat().SaveConfig(OverrideConfigurationPath);
+                    ConfigurationState.Instance.ToFileFormat().SaveConfig(overrideAppDataConfigurationPath);
                 }
                 else
                 {
                     Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load config! Loading the default config instead.\nFailed config location: {ConfigurationPath}");
-        
+
                     ConfigurationState.Instance.LoadDefault();
                 }
             }
-        
+
             // Copies and reloads the configuration file if the game was loaded with arguments
             // based on global configuration
             if (CommandLineState.CountArguments > 0)
@@ -213,36 +208,14 @@ namespace Ryujinx.Ava
                 if (File.Exists(overrideLocalConfigurationPath))
                 {
                     ConfigurationPath = overrideLocalConfigurationPath;
-                    Logger.Notice.Print(LogClass.Application, $"(args)Loading configuration (Local) from: {ConfigurationPath}");
-        
+
                 }
-                else
-                {
-                    Logger.Notice.Print(LogClass.Application, $"File not found(Local): {overrideLocalConfigurationPath}");
-                }
-        
+
                 if (File.Exists(overrideAppDataConfigurationPath))
                 {
                     ConfigurationPath = overrideAppDataConfigurationPath;
-                    Logger.Notice.Print(LogClass.Application, $"(args)Loading configuration(AppData) from: {ConfigurationPath}");
-                }
-                else
-                {
-                    Logger.Notice.Print(LogClass.Application, $"File not found(AppData): {overrideAppDataConfigurationPath}");
                 }
             }
-
-            UseHardwareAcceleration = ConfigurationState.Instance.EnableHardwareAcceleration;
-
-            // Check if graphics backend was overridden
-            if (CommandLineState.OverrideGraphicsBackend is not null)
-                ConfigurationState.Instance.Graphics.GraphicsBackend.Value = CommandLineState.OverrideGraphicsBackend.ToLower() switch
-                {
-                    "opengl" => GraphicsBackend.OpenGl,
-                    "vulkan" => GraphicsBackend.Vulkan,
-                    "metal" => GraphicsBackend.Metal,
-                    _ => ConfigurationState.Instance.Graphics.GraphicsBackend
-                };
 
             // Check if backend threading was overridden
             if (CommandLineState.OverrideBackendThreading is not null)
