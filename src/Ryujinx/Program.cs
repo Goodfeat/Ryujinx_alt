@@ -157,13 +157,31 @@ namespace Ryujinx.Ava
 
        public static void ReloadConfig()
        {
-        
             string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ReleaseInformation.ConfigName);
             string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, ReleaseInformation.ConfigName);
-
+            
             string overrideLocalConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ReleaseInformation.CustomConfigNameOverride);
             string overrideAppDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, ReleaseInformation.CustomConfigNameOverride);
-
+            
+            // Copies and reloads the configuration file if the game was loaded with arguments
+            // based on global configuration
+            if (CommandLineState.CountArguments > 0) 
+            {
+                if (File.Exists(localConfigurationPath))
+                {
+                    File.Copy(localConfigurationPath, overrideLocalConfigurationPath, overwrite: true);
+                }
+            
+                localConfigurationPath = overrideLocalConfigurationPath;
+            
+                if (File.Exists(appDataConfigurationPath))
+                {
+                    File.Copy(appDataConfigurationPath, overrideAppDataConfigurationPath, overwrite: true);
+                }
+            
+                appDataConfigurationPath = overrideAppDataConfigurationPath;
+            }
+            
             // Now load the configuration as the other subsystems are now registered
             if (File.Exists(localConfigurationPath))
             {
@@ -173,47 +191,29 @@ namespace Ryujinx.Ava
             {
                 ConfigurationPath = appDataConfigurationPath;
             }
-
+            
             if (ConfigurationPath == null)
             {
                 // No configuration, we load the default values and save it to disk
                 ConfigurationPath = appDataConfigurationPath;
                 Logger.Notice.Print(LogClass.Application, $"No configuration file found. Saving default configuration to: {ConfigurationPath}");
-
+            
                 ConfigurationState.Instance.LoadDefault();
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(overrideAppDataConfigurationPath);
             }
             else
             {
                 Logger.Notice.Print(LogClass.Application, $"Loading configuration from: {ConfigurationPath}");
-
+            
                 if (ConfigurationFileFormat.TryLoad(ConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
                 {
                     ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
-                    ConfigurationState.Instance.ToFileFormat().SaveConfig(overrideAppDataConfigurationPath);
                 }
                 else
                 {
                     Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load config! Loading the default config instead.\nFailed config location: {ConfigurationPath}");
-
+            
                     ConfigurationState.Instance.LoadDefault();
-                }
-            }
-
-            // Copies and reloads the configuration file if the game was loaded with arguments
-            // based on global configuration
-            if (CommandLineState.CountArguments > 0)
-            {
-                if (File.Exists(overrideLocalConfigurationPath))
-                {
-                    ConfigurationPath = overrideLocalConfigurationPath;
-
-                }
-
-                if (File.Exists(overrideAppDataConfigurationPath))
-                {
-                    ConfigurationPath = overrideAppDataConfigurationPath;
                 }
             }
 
