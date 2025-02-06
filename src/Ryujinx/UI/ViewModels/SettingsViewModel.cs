@@ -4,6 +4,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Humanizer;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL2;
@@ -403,7 +404,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             GameTitle = gameName;
             GameId = gameId;
 
-            string gameDir = Program.GetDirGameUserConfig(gameId);
+            string gameDir = Program.GetDirGameUserConfig(gameId,false,true);
             if (ConfigurationFileFormat.TryLoad(gameDir, out ConfigurationFileFormat configurationFileFormat))
             {
                 ConfigurationState.Instance.Load(configurationFileFormat, gameDir, gameId);
@@ -831,16 +832,11 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private static void RevertIfNotSaved()
         {
-            if (!string.IsNullOrEmpty(Program.GlobalConfigurationPath))
-            {
-
-            }
-            else
+            // maybe this is an unnecessary check(all options need to be tested)
+            if (string.IsNullOrEmpty(Program.GlobalConfigurationPath))
             {
                 Program.ReloadConfig();
             }
-                
-            
         }
 
         public void ApplyButton()
@@ -850,14 +846,16 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void DeleteConfigGame()
         {
-            string gameDir = Program.GetDirGameUserConfig(GameId);
+            string gameDir = Program.GetDirGameUserConfig(GameId,false,false);
 
             if (File.Exists(gameDir))
             {
                 File.Delete(gameDir);
             }
+            RevertIfNotSaved();
             CloseWindow?.Invoke();
         }
+
         public void SaveUserConfig()
         {
             SaveSettings();

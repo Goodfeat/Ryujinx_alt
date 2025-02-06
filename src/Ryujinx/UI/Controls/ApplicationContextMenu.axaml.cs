@@ -409,7 +409,8 @@ namespace Ryujinx.Ava.UI.Controls
             {
                 await new UserConfigWindows(viewModel).ShowDialog((Window)viewModel.TopLevel);
 
-                viewModel.SelectedApplication.UserConfig = File.Exists(Program.GetDirGameUserConfig(viewModel.SelectedApplication.IdString));
+                //just checking for file presence
+                viewModel.SelectedApplication.UserConfig = File.Exists(Program.GetDirGameUserConfig(viewModel.SelectedApplication.IdString,false,false));
 
                 viewModel.RefreshView();
             }

@@ -1541,7 +1541,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             await PerformanceCheck();
 #endif
             // If a configuration is found in the "/games/xxxxxxxxxxxxxx" folder, the program will load the user setting.
-            string gameDir = Program.GetDirGameUserConfig(application.IdBaseString, true);
+            string gameDir = Program.GetDirGameUserConfig(application.IdBaseString, true, true);
 
             if (ConfigurationFileFormat.TryLoad(gameDir, out ConfigurationFileFormat configurationFileFormat))
             {
