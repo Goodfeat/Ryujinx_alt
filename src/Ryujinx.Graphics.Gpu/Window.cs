@@ -142,7 +142,7 @@ namespace Ryujinx.Graphics.Gpu
             {
                 return false;
             }
-            //return false;
+
             FormatInfo formatInfo = new(format, 1, 1, bytesPerPixel, 4);
 
             TextureInfo info = new(

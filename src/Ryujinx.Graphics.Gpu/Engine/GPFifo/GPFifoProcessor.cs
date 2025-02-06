@@ -134,7 +134,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                             _state.NonIncrementing = meth.SecOp == SecOp.NonIncMethod;
                             break;
                         case SecOp.ImmdDataMethod:
-                           // Send(gpuVa, meth.MethodAddress, meth.ImmdData, meth.MethodSubchannel, true);
+                            Send(gpuVa, meth.MethodAddress, meth.ImmdData, meth.MethodSubchannel, true);
                             break;
                     }
                 }
@@ -228,7 +228,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                 {
                     case 0:
                         _3dClass.Write(offset, argument);
-                       //_2dClass.Write(offset, argument);
                         break;
                     case 1:
                         _computeClass.Write(offset, argument);
