@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Threading;
 
 namespace ARMeilleure.Translation.Cache
 {
@@ -24,9 +25,9 @@ namespace ARMeilleure.Translation.Cache
 
         private static CacheMemoryAllocator _cacheAllocator;
 
-        private static readonly List<CacheEntry> _cacheEntries = new();
+        private static readonly List<CacheEntry> _cacheEntries = [];
 
-        private static readonly object _lock = new();
+        private static readonly Lock _lock = new();
         private static bool _initialized;
 
         [SupportedOSPlatform("windows")]

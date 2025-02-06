@@ -1,5 +1,8 @@
+using LibHac.Common;
+using LibHac.Ns;
 using Ryujinx.Audio.Backends.CompatLayer;
 using Ryujinx.Audio.Integration;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
@@ -15,6 +18,8 @@ namespace Ryujinx.HLE
 {
     public class Switch : IDisposable
     {
+        public static Switch Shared { get; private set; }
+        
         public HLEConfiguration Configuration { get; }
         public IHardwareDeviceDriver AudioDeviceDriver { get; }
         public MemoryBlock Memory { get; }
@@ -27,13 +32,17 @@ namespace Ryujinx.HLE
         public TamperMachine TamperMachine { get; }
         public IHostUIHandler UIHandler { get; }
 
-        public VSyncMode VSyncMode { get; set; } = VSyncMode.Switch;
-        public bool CustomVSyncIntervalEnabled { get; set; } = false;
+        public int CpuCoresCount = 4; //Switch 1 has 4 cores
+
+        public VSyncMode VSyncMode { get; set; }
+        public bool CustomVSyncIntervalEnabled { get; set; }
         public int CustomVSyncInterval { get; set; }
 
         public long TargetVSyncInterval { get; set; } = 60;
 
         public bool IsFrameAvailable => Gpu.Window.IsFrameAvailable;
+
+        public DirtyHacks DirtyHacks { get; }
 
         public Switch(HLEConfiguration configuration)
         {
@@ -50,9 +59,10 @@ namespace Ryujinx.HLE
                 : MemoryAllocationFlags.Reserve | MemoryAllocationFlags.Mirrorable;
 
 #pragma warning disable IDE0055 // Disable formatting
+            DirtyHacks        = new DirtyHacks(Configuration.Hacks);
             AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(Configuration.AudioDeviceDriver);
             Memory            = new MemoryBlock(Configuration.MemoryConfiguration.ToDramSize(), memoryAllocationFlags);
-            Gpu               = new GpuContext(Configuration.GpuRenderer);
+            Gpu               = new GpuContext(Configuration.GpuRenderer, DirtyHacks);
             System            = new HOS.Horizon(this);
             Statistics        = new PerformanceStatistics();
             Hid               = new Hid(this, System.HidStorage);
@@ -70,8 +80,11 @@ namespace Ryujinx.HLE
             System.EnablePtc                        = Configuration.EnablePtc;
             System.FsIntegrityCheckLevel            = Configuration.FsIntegrityCheckLevel;
             System.GlobalAccessLogMode              = Configuration.FsGlobalAccessLogMode;
+            
             UpdateVSyncInterval();
 #pragma warning restore IDE0055
+
+            Shared = this;
         }
 
         public void ProcessFrame()
@@ -111,7 +124,7 @@ namespace Ryujinx.HLE
 
         public bool LoadCart(string exeFsDir, string romFsFile = null) => Processes.LoadUnpackedNca(exeFsDir, romFsFile);
         public bool LoadXci(string xciFile, ulong applicationId = 0) => Processes.LoadXci(xciFile, applicationId);
-        public bool LoadNca(string ncaFile) => Processes.LoadNca(ncaFile);
+        public bool LoadNca(string ncaFile, BlitStruct<ApplicationControlProperty>? customNacpData = null) => Processes.LoadNca(ncaFile, customNacpData);
         public bool LoadNsp(string nspFile, ulong applicationId = 0) => Processes.LoadNsp(nspFile, applicationId);
         public bool LoadProgram(string fileName) => Processes.LoadNxo(fileName);
 
@@ -140,6 +153,9 @@ namespace Ryujinx.HLE
                 AudioDeviceDriver.Dispose();
                 FileSystem.Dispose();
                 Memory.Dispose();
+
+                TitleIDs.CurrentApplication.Value = null;
+                Shared = null;
             }
         }
     }

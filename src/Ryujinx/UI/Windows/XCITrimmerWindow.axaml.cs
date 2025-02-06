@@ -3,8 +3,8 @@ using Avalonia.Interactivity;
 using Avalonia.Styling;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Common.Models;
 using Ryujinx.Ava.UI.ViewModels;
-using Ryujinx.UI.Common.Models;
 using System;
 using System.Threading.Tasks;
 
@@ -28,15 +28,15 @@ namespace Ryujinx.Ava.UI.Windows
             InitializeComponent();
         }
 
-        public static async Task Show(MainWindowViewModel mainWindowViewModel)
+        public static async Task Show()
         {
             ContentDialog contentDialog = new()
             {
                 PrimaryButtonText = string.Empty,
                 SecondaryButtonText = string.Empty,
                 CloseButtonText = string.Empty,
-                Content = new XCITrimmerWindow(mainWindowViewModel),
-                Title = string.Format(LocaleManager.Instance[LocaleKeys.XCITrimmerWindowTitle]),
+                Content = new XCITrimmerWindow(RyujinxApp.MainWindow.ViewModel),
+                Title = LocaleManager.Instance[LocaleKeys.XCITrimmerWindowTitle]
             };
 
             Style bottomBorder = new(x => x.OfType<Grid>().Name("DialogSpace").Child().OfType<Border>());
@@ -81,7 +81,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            foreach (var content in e.AddedItems)
+            foreach (object content in e.AddedItems)
             {
                 if (content is XCITrimmerFileModel applicationData)
                 {
@@ -89,7 +89,7 @@ namespace Ryujinx.Ava.UI.Windows
                 }
             }
 
-            foreach (var content in e.RemovedItems)
+            foreach (object content in e.RemovedItems)
             {
                 if (content is XCITrimmerFileModel applicationData)
                 {

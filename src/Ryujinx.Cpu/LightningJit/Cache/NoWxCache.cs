@@ -4,6 +4,7 @@ using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Ryujinx.Cpu.LightningJit.Cache
 {
@@ -104,7 +105,7 @@ namespace Ryujinx.Cpu.LightningJit.Cache
         private readonly MemoryCache _sharedCache;
         private readonly MemoryCache _localCache;
         private readonly PageAlignedRangeList _pendingMap;
-        private readonly object _lock;
+        private readonly Lock _lock = new();
 
         class ThreadLocalCacheEntry
         {
@@ -137,7 +138,6 @@ namespace Ryujinx.Cpu.LightningJit.Cache
             _sharedCache = new(allocator, SharedCacheSize);
             _localCache = new(allocator, LocalCacheSize);
             _pendingMap = new(_sharedCache.ReprotectAsRx, RegisterFunction);
-            _lock = new();
         }
 
         public unsafe nint Map(nint framePointer, ReadOnlySpan<byte> code, ulong guestAddress, ulong guestSize)
@@ -190,7 +190,7 @@ namespace Ryujinx.Cpu.LightningJit.Cache
 
         private bool TryGetThreadLocalFunction(ulong guestAddress, out nint funcPtr)
         {
-            if ((_threadLocalCache ??= new()).TryGetValue(guestAddress, out var entry))
+            if ((_threadLocalCache ??= new()).TryGetValue(guestAddress, out ThreadLocalCacheEntry entry))
             {
                 if (entry.IncrementUseCount() >= MinCallsForPad)
                 {
@@ -231,7 +231,7 @@ namespace Ryujinx.Cpu.LightningJit.Cache
                 _sharedCache.Pointer,
                 SharedCacheSize);
 
-            List<(ulong, ThreadLocalCacheEntry)> toDelete = new();
+            List<(ulong, ThreadLocalCacheEntry)> toDelete = [];
 
             foreach ((ulong address, ThreadLocalCacheEntry entry) in _threadLocalCache)
             {

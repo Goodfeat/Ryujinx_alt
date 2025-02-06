@@ -1,9 +1,11 @@
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
+using Ryujinx.Common.Logging;
 using Ryujinx.Input;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Threading;
 using ConfigKey = Ryujinx.Common.Configuration.Hid.Key;
 using Key = Ryujinx.Input.Key;
 
@@ -15,7 +17,7 @@ namespace Ryujinx.Ava.Input
         private readonly AvaloniaKeyboardDriver _driver;
         private StandardKeyboardInputConfig _configuration;
 
-        private readonly object _userMappingLock = new();
+        private readonly Lock _userMappingLock = new();
 
         public string Id { get; }
         public string Name { get; }
@@ -140,6 +142,11 @@ namespace Ryujinx.Ava.Input
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger1,  (Key)_configuration.RightJoycon.ButtonSl));
 #pragma warning restore IDE0055
             }
+        }
+
+        public void SetLed(uint packedRgb)
+        {
+            Logger.Info?.Print(LogClass.UI, "SetLed called on an AvaloniaKeyboard");
         }
 
         public void SetTriggerThreshold(float triggerThreshold) { }

@@ -1,10 +1,14 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
-using Ryujinx.UI.App.Common;
+using Ryujinx.Ava.Utilities.AppLibrary;
+using Ryujinx.Ava.Utilities.Compat;
 using System;
+using System.Globalization;
+using System.Linq;
 
 namespace Ryujinx.Ava.UI.Controls
 {
@@ -26,11 +30,38 @@ namespace Ryujinx.Ava.UI.Controls
             if (sender is ListBox { SelectedItem: ApplicationData selected })
                 RaiseEvent(new ApplicationOpenedEventArgs(selected, ApplicationOpenedEvent));
         }
-
-        public void GameList_SelectionChanged(object sender, SelectionChangedEventArgs args)
+        
+        private async void PlayabilityStatus_OnClick(object sender, RoutedEventArgs e)
         {
-            if (DataContext is MainWindowViewModel viewModel && sender is ListBox { SelectedItem: ApplicationData selected })
-                viewModel.ListSelectedApplication = selected;
+            if (DataContext is not MainWindowViewModel mwvm)
+                return;
+            
+            if (sender is not Button { Content: TextBlock playabilityLabel })
+                return;
+
+            await CompatibilityList.Show((string)playabilityLabel.Tag);
+        }
+
+        private async void IdString_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not MainWindowViewModel mwvm)
+                return;
+            
+            if (sender is not Button { Content: TextBlock idText })
+                return;
+
+            if (!RyujinxApp.IsClipboardAvailable(out IClipboard clipboard))
+                return;
+            
+            ApplicationData appData = mwvm.Applications.FirstOrDefault(it => it.IdString == idText.Text);
+            if (appData is null)
+                return;
+            
+            await clipboard.SetTextAsync(appData.IdString);
+                
+            NotificationHelper.ShowInformation(
+                "Copied Title ID", 
+                $"{appData.Name} ({appData.IdString})");
         }
     }
 }

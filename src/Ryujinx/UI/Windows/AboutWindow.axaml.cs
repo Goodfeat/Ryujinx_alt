@@ -8,7 +8,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.ViewModels;
 using Ryujinx.Common;
-using Ryujinx.UI.Common.Helper;
+using Ryujinx.Common.Helper;
 using System.Threading.Tasks;
 using Button = Avalonia.Controls.Button;
 
@@ -33,7 +33,7 @@ namespace Ryujinx.Ava.UI.Windows
                 PrimaryButtonText = string.Empty,
                 SecondaryButtonText = string.Empty,
                 CloseButtonText = LocaleManager.Instance[LocaleKeys.UserProfilesClose],
-                Content = new AboutWindow(),
+                Content = new AboutWindow()
             };
 
             Style closeButton = new(x => x.Name("CloseButton"));

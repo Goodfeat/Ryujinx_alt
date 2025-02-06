@@ -36,8 +36,9 @@
                         HorizontalAlignment="Center"
                         Spacing="10">
                         <Image
-                            Height="80"
-                            Source="resm:Ryujinx.UI.Common.Resources.Logo_Ryujinx.png?assembly=Ryujinx.UI.Common"
+                            Height="90"
+                            Width="90"
+                            Source="resm:Ryujinx.Assets.UIImages.Logo_Ryujinx.png?assembly=Ryujinx"
                             HorizontalAlignment="Center"
                             IsHitTestVisible="True" />
                         <WrapPanel
@@ -165,14 +166,23 @@
                     Text="{ext:Locale AboutRyujinxMaintainersTitle}" />
                 <TextBlock
                     FontSize="10"
-                    Text="{Binding Developers}"
+                    Margin="0, 0, 0, 5"
+                    TextWrapping="Wrap"
+                    Text="{Binding Developers}"/>
+                <TextBlock
+                    FontSize="15"
+                    FontWeight="Bold"
+                    Text="{ext:Locale AboutRyujinxFormerMaintainersTitle}" />
+                <TextBlock
+                    FontSize="10"
+                    Text="{Binding FormerDevelopers}"
                     TextWrapping="Wrap" />
                 <Button
                     Padding="5"
                     HorizontalAlignment="Left"
                     Background="Transparent"
                     Click="Button_OnClick"
-                    Tag="https://github.com/GreemDev/Ryujinx/graphs/contributors?type=a">
+                    Tag="https://github.com/Ryubing/Ryujinx/graphs/contributors?type=a">
                     <TextBlock
                         FontSize="10"
                         Text="{ext:Locale AboutRyujinxContributorsButtonHeader}"

@@ -307,7 +307,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
             int tempRegister;
             int tempGuestAddress = -1;
 
-            bool inlineLookup = guestAddress.Kind != OperandKind.Constant && 
+            bool inlineLookup = guestAddress.Kind != OperandKind.Constant &&
                                 funcTable is { Sparse: true };
 
             if (guestAddress.Kind == OperandKind.Constant)
@@ -370,7 +370,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
 
                 for (int i = 0; i < funcTable.Levels.Length; i++)
                 {
-                    var level = funcTable.Levels[i];
+                    AddressTableLevel level = funcTable.Levels[i];
                     asm.Ubfx(indexReg, guestAddress, level.Index, level.Length);
                     asm.Lsl(indexReg, indexReg, Const(3));
 
@@ -417,7 +417,7 @@ namespace Ryujinx.Cpu.LightningJit.Arm64.Target.Arm64
             nint funcPtr,
             int spillBaseOffset,
             int? resultRegister,
-            params ulong[] callArgs)
+            params ReadOnlySpan<ulong> callArgs)
         {
             uint resultMask = 0u;
 

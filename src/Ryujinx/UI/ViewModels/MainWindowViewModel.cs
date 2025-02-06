@@ -6,10 +6,13 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
 using DynamicData;
 using DynamicData.Binding;
 using FluentAvalonia.UI.Controls;
+using Gommon;
 using LibHac.Common;
+using LibHac.Ns;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
@@ -19,21 +22,22 @@ using Ryujinx.Ava.UI.Models;
 using Ryujinx.Ava.UI.Models.Generic;
 using Ryujinx.Ava.UI.Renderer;
 using Ryujinx.Ava.UI.Windows;
+using Ryujinx.Ava.Utilities.AppLibrary;
+using Ryujinx.Ava.Utilities.Configuration;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Helper;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.UI;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.HOS.Services.Nfc.AmiiboDecryption;
 using Ryujinx.HLE.UI;
 using Ryujinx.Input.HLE;
-using Ryujinx.UI.App.Common;
-using Ryujinx.UI.Common;
-using Ryujinx.UI.Common.Configuration;
-using Ryujinx.UI.Common.Helper;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -50,81 +54,86 @@ using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
 
 namespace Ryujinx.Ava.UI.ViewModels
 {
-    public class MainWindowViewModel : BaseModel
+    public partial class MainWindowViewModel : BaseModel
     {
         private const int HotKeyPressDelayMs = 500;
         private delegate int LoadContentFromFolderDelegate(List<string> dirs, out int numRemoved);
 
-        private ObservableCollectionExtended<ApplicationData> _applications;
-        private string _aspectStatusText;
-
-        private string _loadHeading;
-        private string _cacheLoadStatus;
+        [ObservableProperty] private ObservableCollectionExtended<ApplicationData> _applications;
+        [ObservableProperty] private string _aspectRatioStatusText;
+        [ObservableProperty] private string _loadHeading;
+        [ObservableProperty] private string _cacheLoadStatus;
+        [ObservableProperty] private string _dockedStatusText;
+        [ObservableProperty] private string _fifoStatusText;
+        [ObservableProperty] private string _gameStatusText;
+        [ObservableProperty] private string _volumeStatusText;
+        [ObservableProperty] private string _gpuNameText;
+        [ObservableProperty] private string _backendText;
+        [ObservableProperty] private string _shaderCountText;
+        [ObservableProperty] private bool _showShaderCompilationHint;
+        [ObservableProperty] private bool _isFullScreen;
+        [ObservableProperty] private int _progressMaximum;
+        [ObservableProperty] private int _progressValue;
+        [ObservableProperty] private bool _showMenuAndStatusBar = true;
+        [ObservableProperty] private bool _showStatusSeparator;
+        [ObservableProperty] private Brush _progressBarForegroundColor;
+        [ObservableProperty] private Brush _progressBarBackgroundColor;
+        [ObservableProperty] private Brush _vSyncModeColor;
+        #nullable enable
+        [ObservableProperty] private byte[]? _selectedIcon;
+        #nullable disable
+        [ObservableProperty] private int _statusBarProgressMaximum;
+        [ObservableProperty] private int _statusBarProgressValue;
+        [ObservableProperty] private string _statusBarProgressStatusText;
+        [ObservableProperty] private bool _statusBarProgressStatusVisible;
+        [ObservableProperty] private bool _isPaused;
+        [ObservableProperty] private bool _isLoadingIndeterminate = true;
+        [ObservableProperty] private bool _showAll;
+        [ObservableProperty] private string _lastScannedAmiiboId;
+        [ObservableProperty] private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
+        [ObservableProperty] private long _lastFullscreenToggle = Environment.TickCount64;
+        [ObservableProperty] private bool _showContent = true;
+        [ObservableProperty] private float _volumeBeforeMute;
+        [ObservableProperty] private bool _areMimeTypesRegistered = FileAssociationHelper.AreMimeTypesRegistered;
+        [ObservableProperty] private Cursor _cursor;
+        [ObservableProperty] private string _title;
+        [ObservableProperty] private WindowState _windowState;
+        [ObservableProperty] private double _windowWidth;
+        [ObservableProperty] private double _windowHeight;
+        [ObservableProperty] private bool _isActive;
+        [ObservableProperty] private bool _isSubMenuOpen;
+        [ObservableProperty] private ApplicationContextMenu _listAppContextMenu;
+        [ObservableProperty] private ApplicationContextMenu _gridAppContextMenu;
+        
+        private bool _showLoadProgress;
+        private bool _isGameRunning;
+        private bool _isAmiiboRequested;
+        private bool _isAmiiboBinRequested;
         private string _searchText;
         private Timer _searchTimer;
-        private string _dockedStatusText;
         private string _vSyncModeText;
-        private string _fifoStatusText;
-        private string _gameStatusText;
-        private string _volumeStatusText;
-        private string _gpuStatusText;
-        private string _shaderCountText;
-        private bool _isAmiiboRequested;
-        private bool _showRightmostSeparator;
-        private bool _isGameRunning;
-        private bool _isFullScreen;
-        private int _progressMaximum;
-        private int _progressValue;
-        private long _lastFullscreenToggle = Environment.TickCount64;
-        private bool _showLoadProgress;
-        private bool _showMenuAndStatusBar = true;
-        private bool _showStatusSeparator;
-        private Brush _progressBarForegroundColor;
-        private Brush _progressBarBackgroundColor;
-        private Brush _vSyncModeColor;
-        private byte[] _selectedIcon;
-        private bool _isAppletMenuActive;
-        private int _statusBarProgressMaximum;
-        private int _statusBarProgressValue;
-        private string _statusBarProgressStatusText;
-        private bool _statusBarProgressStatusVisible;
-        private bool _isPaused;
-        private bool _showContent = true;
-        private bool _isLoadingIndeterminate = true;
-        private bool _showAll;
-        private string _lastScannedAmiiboId;
-        private bool _statusBarVisible;
-        private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
-
         private string _showUiKey = "F4";
         private string _pauseKey = "F5";
         private string _screenshotKey = "F8";
         private float _volume;
-        private float _volumeBeforeMute;
-        private string _backendText;
-
-        private bool _areMimeTypesRegistered = FileAssociationHelper.AreMimeTypesRegistered;
+        private bool _isAppletMenuActive;
+        private bool _statusBarVisible;
         private bool _canUpdate = true;
-        private Cursor _cursor;
-        private string _title;
         private ApplicationData _currentApplicationData;
         private readonly AutoResetEvent _rendererWaitEvent;
-        private WindowState _windowState;
-        private double _windowWidth;
-        private double _windowHeight;
         private int _customVSyncInterval;
         private int _customVSyncIntervalPercentageProxy;
+        private ApplicationData _listSelectedApplication;
+        private ApplicationData _gridSelectedApplication;
+        
+        // Key is Title ID
+        public SafeDictionary<string, LdnGameData.Array> LdnData = [];
 
-        private bool _isActive;
-        private bool _isSubMenuOpen;
-
-        public ApplicationData ListSelectedApplication;
-        public ApplicationData GridSelectedApplication;
-
-        public IEnumerable<LdnGameData> LastLdnGameData;
-
+        // The UI specifically uses a thicker bordered variant of the icon to avoid crunching out the border at lower resolutions.
+        // For an example of this, download canary 1.2.95, then open the settings menu, and look at the icon in the top-left.
+        // The border gets reduced to colored pixels in the 4 corners.
         public static readonly Bitmap IconBitmap =
-            new(Assembly.GetAssembly(typeof(ConfigurationState))!.GetManifestResourceStream("Ryujinx.UI.Common.Resources.Logo_Ryujinx.png")!);
+            new(Assembly.GetAssembly(typeof(MainWindowViewModel))!.GetManifestResourceStream("Ryujinx.Assets.UIImages.Logo_Ryujinx_AntiAlias.png")!);
 
         public MainWindow Window { get; init; }
 
@@ -137,8 +146,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             Applications.ToObservableChangeSet()
                 .Filter(Filter)
                 .Sort(GetComparer())
-                .Bind(out _appsObservableList)
-                .AsObservableList();
+                .OnItemAdded(_ => OnPropertyChanged(nameof(AppsObservableList)))
+                .OnItemRemoved(_ => OnPropertyChanged(nameof(AppsObservableList)))
+#pragma warning disable MVVMTK0034 // Event to update is fired below
+                .Bind(out _appsObservableList);
+#pragma warning restore MVVMTK0034
 
             _rendererWaitEvent = new AutoResetEvent(false);
 
@@ -147,8 +159,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 LoadConfigurableHotKeys();
 
                 Volume = ConfigurationState.Instance.System.AudioVolume;
+                CustomVSyncInterval = ConfigurationState.Instance.Graphics.CustomVSyncInterval.Value;
             }
-            CustomVSyncInterval = ConfigurationState.Instance.Graphics.CustomVSyncInterval.Value;
         }
 
         public void Initialize(
@@ -209,53 +221,10 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool CanUpdate
         {
-            get => _canUpdate && EnableNonGameRunningControls && Updater.CanUpdate(false);
+            get => _canUpdate && EnableNonGameRunningControls && Updater.CanUpdate();
             set
             {
                 _canUpdate = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public Cursor Cursor
-        {
-            get => _cursor;
-            set
-            {
-                _cursor = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public ReadOnlyObservableCollection<ApplicationData> AppsObservableList
-        {
-            get => _appsObservableList;
-            set
-            {
-                _appsObservableList = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsPaused
-        {
-            get => _isPaused;
-            set
-            {
-                _isPaused = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public long LastFullscreenToggle
-        {
-            get => _lastFullscreenToggle;
-            set
-            {
-                _lastFullscreenToggle = value;
-
                 OnPropertyChanged();
             }
         }
@@ -274,17 +243,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool EnableNonGameRunningControls => !IsGameRunning;
 
         public bool ShowFirmwareStatus => !ShowLoadProgress;
-
-        public bool ShowRightmostSeparator
-        {
-            get => _showRightmostSeparator;
-            set
-            {
-                _showRightmostSeparator = value;
-
-                OnPropertyChanged();
-            }
-        }
 
         public bool IsGameRunning
         {
@@ -316,6 +274,18 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged();
             }
         }
+        public bool IsAmiiboBinRequested
+        {
+            get => _isAmiiboBinRequested && _isGameRunning;
+            set
+            {
+                _isAmiiboBinRequested = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public bool CanScanAmiiboBinaries => AmiiboBinReader.HasAmiiboKeyFile;
 
         public bool ShowLoadProgress
         {
@@ -328,58 +298,40 @@ namespace Ryujinx.Ava.UI.ViewModels
                 OnPropertyChanged(nameof(ShowFirmwareStatus));
             }
         }
-
-        public string GameStatusText
+        
+        public ApplicationData ListSelectedApplication
         {
-            get => _gameStatusText;
+            get => _listSelectedApplication;
             set
             {
-                _gameStatusText = value;
+                _listSelectedApplication = value;
+
+#pragma warning disable MVVMTK0034
+                if (_listSelectedApplication != null && _listAppContextMenu == null)
+
+                    ListAppContextMenu = new ApplicationContextMenu();
+                else if (_listSelectedApplication == null && _listAppContextMenu != null)
+                    ListAppContextMenu = null!;
+#pragma warning restore MVVMTK0034
 
                 OnPropertyChanged();
             }
         }
 
-        public bool IsFullScreen
+        public ApplicationData GridSelectedApplication
         {
-            get => _isFullScreen;
+            get => _gridSelectedApplication;
             set
             {
-                _isFullScreen = value;
+                _gridSelectedApplication = value;
 
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsSubMenuOpen
-        {
-            get => _isSubMenuOpen;
-            set
-            {
-                _isSubMenuOpen = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowAll
-        {
-            get => _showAll;
-            set
-            {
-                _showAll = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public string LastScannedAmiiboId
-        {
-            get => _lastScannedAmiiboId;
-            set
-            {
-                _lastScannedAmiiboId = value;
-
+#pragma warning disable MVVMTK0034
+                if (_gridSelectedApplication != null && _gridAppContextMenu == null)
+                    GridAppContextMenu = new ApplicationContextMenu();
+                else if (_gridSelectedApplication == null && _gridAppContextMenu != null)
+                    GridAppContextMenu = null!;
+#pragma warning restore MVVMTK0034
+                
                 OnPropertyChanged();
             }
         }
@@ -397,89 +349,24 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public bool OpenUserSaveDirectoryEnabled => !SelectedApplication.ControlHolder.ByteSpan.IsZeros() && SelectedApplication.ControlHolder.Value.UserAccountSaveDataSize > 0;
+        public bool HasCompatibilityEntry => SelectedApplication.HasPlayabilityInfo;
 
-        public bool OpenDeviceSaveDirectoryEnabled => !SelectedApplication.ControlHolder.ByteSpan.IsZeros() && SelectedApplication.ControlHolder.Value.DeviceSaveDataSize > 0;
+        public bool HasDlc => ApplicationLibrary.HasDlcs(SelectedApplication.Id);
 
-        public bool TrimXCIEnabled => Ryujinx.Common.Utilities.XCIFileTrimmer.CanTrim(SelectedApplication.Path, new Common.XCIFileTrimmerMainWindowLog(this));
+        public bool OpenUserSaveDirectoryEnabled => SelectedApplication.HasControlHolder && SelectedApplication.ControlHolder.Value.UserAccountSaveDataSize > 0;
 
-        public bool OpenBcatSaveDirectoryEnabled => !SelectedApplication.ControlHolder.ByteSpan.IsZeros() && SelectedApplication.ControlHolder.Value.BcatDeliveryCacheStorageSize > 0;
+        public bool OpenDeviceSaveDirectoryEnabled => SelectedApplication.HasControlHolder && SelectedApplication.ControlHolder.Value.DeviceSaveDataSize > 0;
 
-        public bool CreateShortcutEnabled => !ReleaseInformation.IsFlatHubBuild;
+        public bool TrimXCIEnabled => XCIFileTrimmer.CanTrim(SelectedApplication.Path, new XCITrimmerLog.MainWindow(this));
 
-        public string LoadHeading
+        public bool OpenBcatSaveDirectoryEnabled => SelectedApplication.HasControlHolder && SelectedApplication.ControlHolder.Value.BcatDeliveryCacheStorageSize > 0;
+
+        public bool ShowCustomVSyncIntervalPicker 
+            => _isGameRunning && AppHost.Device.VSyncMode == VSyncMode.Custom;
+
+        public void UpdateVSyncIntervalPicker()
         {
-            get => _loadHeading;
-            set
-            {
-                _loadHeading = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public string CacheLoadStatus
-        {
-            get => _cacheLoadStatus;
-            set
-            {
-                _cacheLoadStatus = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public Brush ProgressBarBackgroundColor
-        {
-            get => _progressBarBackgroundColor;
-            set
-            {
-                _progressBarBackgroundColor = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public Brush ProgressBarForegroundColor
-        {
-            get => _progressBarForegroundColor;
-            set
-            {
-                _progressBarForegroundColor = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public Brush VSyncModeColor
-        {
-            get => _vSyncModeColor;
-            set
-            {
-                _vSyncModeColor = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowCustomVSyncIntervalPicker
-        {
-            get
-            {
-                if (_isGameRunning)
-                {
-                    return AppHost.Device.VSyncMode ==
-                           VSyncMode.Custom;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            set
-            {
-                OnPropertyChanged();
-            }
+            OnPropertyChanged(nameof(ShowCustomVSyncIntervalPicker));
         }
 
         public int CustomVSyncIntervalPercentageProxy
@@ -532,126 +419,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public byte[] SelectedIcon
-        {
-            get => _selectedIcon;
-            set
-            {
-                _selectedIcon = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public int ProgressMaximum
-        {
-            get => _progressMaximum;
-            set
-            {
-                _progressMaximum = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public int ProgressValue
-        {
-            get => _progressValue;
-            set
-            {
-                _progressValue = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public int StatusBarProgressMaximum
-        {
-            get => _statusBarProgressMaximum;
-            set
-            {
-                _statusBarProgressMaximum = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public int StatusBarProgressValue
-        {
-            get => _statusBarProgressValue;
-            set
-            {
-                _statusBarProgressValue = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool StatusBarProgressStatusVisible
-        {
-            get => _statusBarProgressStatusVisible;
-            set
-            {
-                _statusBarProgressStatusVisible = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public string StatusBarProgressStatusText
-        {
-            get => _statusBarProgressStatusText;
-            set
-            {
-                _statusBarProgressStatusText = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public string FifoStatusText
-        {
-            get => _fifoStatusText;
-            set
-            {
-                _fifoStatusText = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public string GpuNameText
-        {
-            get => _gpuStatusText;
-            set
-            {
-                _gpuStatusText = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public string ShaderCountText
-        {
-            get => _shaderCountText;
-            set
-            {
-                _shaderCountText = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string BackendText
-        {
-            get => _backendText;
-            set
-            {
-                _backendText = value;
-
-                OnPropertyChanged();
-            }
-        }
-
         public string VSyncModeText
         {
             get => _vSyncModeText;
@@ -660,39 +427,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 _vSyncModeText = value;
 
                 OnPropertyChanged();
-            }
-        }
-
-        public string DockedStatusText
-        {
-            get => _dockedStatusText;
-            set
-            {
-                _dockedStatusText = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public string AspectRatioStatusText
-        {
-            get => _aspectStatusText;
-            set
-            {
-                _aspectStatusText = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public string VolumeStatusText
-        {
-            get => _volumeStatusText;
-            set
-            {
-                _volumeStatusText = value;
-
-                OnPropertyChanged();
+                OnPropertyChanged(nameof(ShowCustomVSyncIntervalPicker));
             }
         }
 
@@ -716,112 +451,12 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public float VolumeBeforeMute
-        {
-            get => _volumeBeforeMute;
-            set
-            {
-                _volumeBeforeMute = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowStatusSeparator
-        {
-            get => _showStatusSeparator;
-            set
-            {
-                _showStatusSeparator = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowMenuAndStatusBar
-        {
-            get => _showMenuAndStatusBar;
-            set
-            {
-                _showMenuAndStatusBar = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsLoadingIndeterminate
-        {
-            get => _isLoadingIndeterminate;
-            set
-            {
-                _isLoadingIndeterminate = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsActive
-        {
-            get => _isActive;
-            set
-            {
-                _isActive = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-
-        public bool ShowContent
-        {
-            get => _showContent;
-            set
-            {
-                _showContent = value;
-
-                OnPropertyChanged();
-            }
-        }
-
         public bool IsAppletMenuActive
         {
             get => _isAppletMenuActive && EnableNonGameRunningControls;
             set
             {
                 _isAppletMenuActive = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public WindowState WindowState
-        {
-            get => _windowState;
-            internal set
-            {
-                _windowState = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public double WindowWidth
-        {
-            get => _windowWidth;
-            set
-            {
-                _windowWidth = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public double WindowHeight
-        {
-            get => _windowHeight;
-            set
-            {
-                _windowHeight = value;
 
                 OnPropertyChanged();
             }
@@ -857,6 +492,19 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public bool StartGamesWithoutUI
+        {
+            get => ConfigurationState.Instance.UI.StartNoUI;
+            set
+            {
+                ConfigurationState.Instance.UI.StartNoUI.Value = value;
+
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+
+                OnPropertyChanged();
+            }
+        }
+
         public bool ShowConsole
         {
             get => ConfigurationState.Instance.UI.ShowConsole;
@@ -870,17 +518,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public string Title
-        {
-            get => _title;
-            set
-            {
-                _title = value;
-
-                OnPropertyChanged();
-            }
-        }
-
         public bool ShowConsoleVisible
         {
             get => ConsoleHelper.SetConsoleWindowStateSupported;
@@ -889,27 +526,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool ManageFileTypesVisible
         {
             get => FileAssociationHelper.IsTypeAssociationSupported;
-        }
-
-        public bool AreMimeTypesRegistered
-        {
-            get => _areMimeTypesRegistered;
-            set {
-                _areMimeTypesRegistered = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public ObservableCollectionExtended<ApplicationData> Applications
-        {
-            get => _applications;
-            set
-            {
-                _applications = value;
-
-                OnPropertyChanged();
-            }
         }
 
         public Glyph Glyph
@@ -929,7 +545,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool ShowNames
         {
-            get => ConfigurationState.Instance.UI.ShowNames && ConfigurationState.Instance.UI.GridSize > 1; set
+            get => ConfigurationState.Instance.UI.ShowNames && ConfigurationState.Instance.UI.GridSize > 1; 
+            set
             {
                 ConfigurationState.Instance.UI.ShowNames.Value = value;
 
@@ -1016,14 +633,15 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 return SortMode switch
                 {
-                    ApplicationSort.Title => LocaleManager.Instance[LocaleKeys.GameListHeaderApplication],
-                    ApplicationSort.Developer => LocaleManager.Instance[LocaleKeys.GameListHeaderDeveloper],
-                    ApplicationSort.LastPlayed => LocaleManager.Instance[LocaleKeys.GameListHeaderLastPlayed],
-                    ApplicationSort.TotalTimePlayed => LocaleManager.Instance[LocaleKeys.GameListHeaderTimePlayed],
-                    ApplicationSort.FileType => LocaleManager.Instance[LocaleKeys.GameListHeaderFileExtension],
-                    ApplicationSort.FileSize => LocaleManager.Instance[LocaleKeys.GameListHeaderFileSize],
-                    ApplicationSort.Path => LocaleManager.Instance[LocaleKeys.GameListHeaderPath],
                     ApplicationSort.Favorite => LocaleManager.Instance[LocaleKeys.CommonFavorite],
+                    ApplicationSort.TitleId => LocaleManager.Instance[LocaleKeys.DlcManagerTableHeadingTitleIdLabel],
+                    ApplicationSort.Title => LocaleManager.Instance[LocaleKeys.GameListHeaderApplication],
+                    ApplicationSort.Developer => LocaleManager.Instance[LocaleKeys.GameListSortDeveloper],
+                    ApplicationSort.LastPlayed => LocaleManager.Instance[LocaleKeys.GameListSortLastPlayed],
+                    ApplicationSort.TotalTimePlayed => LocaleManager.Instance[LocaleKeys.GameListSortTimePlayed],
+                    ApplicationSort.FileType => LocaleManager.Instance[LocaleKeys.GameListSortFileExtension],
+                    ApplicationSort.FileSize => LocaleManager.Instance[LocaleKeys.GameListSortFileSize],
+                    ApplicationSort.Path => LocaleManager.Instance[LocaleKeys.GameListSortPath],
                     _ => string.Empty,
                 };
             }
@@ -1094,6 +712,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public IHostUIHandler UiHandler { get; internal set; }
         public bool IsSortedByFavorite => SortMode == ApplicationSort.Favorite;
         public bool IsSortedByTitle => SortMode == ApplicationSort.Title;
+        public bool IsSortedByTitleId => SortMode == ApplicationSort.TitleId;
         public bool IsSortedByDeveloper => SortMode == ApplicationSort.Developer;
         public bool IsSortedByLastPlayed => SortMode == ApplicationSort.LastPlayed;
         public bool IsSortedByTimePlayed => SortMode == ApplicationSort.TotalTimePlayed;
@@ -1126,6 +745,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 ApplicationSort.FileSize        => CreateComparer(IsAscending, app => app.FileSize),
                 ApplicationSort.Path            => CreateComparer(IsAscending, app => app.Path),
                 ApplicationSort.Favorite        => CreateComparer(IsAscending, app => new AppListFavoriteComparable(app)),
+                ApplicationSort.TitleId         => CreateComparer(IsAscending, app => app.Id),
                 _ => null,
 #pragma warning restore IDE0055
             };
@@ -1140,7 +760,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             Applications.ToObservableChangeSet()
                 .Filter(Filter)
                 .Sort(GetComparer())
-                .Bind(out _appsObservableList).AsObservableList();
+#pragma warning disable MVVMTK0034
+                .Bind(out _appsObservableList)
+#pragma warning restore MVVMTK0034
+                .AsObservableList();
 
             OnPropertyChanged(nameof(AppsObservableList));
         }
@@ -1427,9 +1050,9 @@ namespace Ryujinx.Ava.UI.ViewModels
         private void PrepareLoadScreen()
         {
             using MemoryStream stream = new(SelectedIcon);
-            using var gameIconBmp = SKBitmap.Decode(stream);
+            using SKBitmap gameIconBmp = SKBitmap.Decode(stream);
 
-            var dominantColor = IconColorPicker.GetFilteredColor(gameIconBmp);
+            SKColor dominantColor = IconColorPicker.GetFilteredColor(gameIconBmp);
 
             const float ColorMultiple = 0.5f;
 
@@ -1489,15 +1112,13 @@ namespace Ryujinx.Ava.UI.ViewModels
                     }
 
                     VSyncModeText = args.VSyncMode == "Custom" ? "Custom" : "VSync";
-                    ShowCustomVSyncIntervalPicker =
-                        args.VSyncMode == VSyncMode.Custom.ToString();
                     DockedStatusText = args.DockedMode;
                     AspectRatioStatusText = args.AspectRatio;
                     GameStatusText = args.GameStatus;
                     VolumeStatusText = args.VolumeStatus;
                     FifoStatusText = args.FifoStatus;
 
-                    ShaderCountText = (ShowRightmostSeparator = args.ShaderCount > 0)
+                    ShaderCountText = (ShowShaderCompilationHint = args.ShaderCount > 0)
                         ? $"{LocaleManager.Instance[LocaleKeys.CompilingShaders]}: {args.ShaderCount}"
                         : string.Empty;
 
@@ -1515,7 +1136,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private async Task LoadContentFromFolder(LocaleKeys localeMessageAddedKey, LocaleKeys localeMessageRemovedKey, LoadContentFromFolderDelegate onDirsSelected)
         {
-            var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            IReadOnlyList<IStorageFolder> result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle],
                 AllowMultiple = true,
@@ -1523,10 +1144,10 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (result.Count > 0)
             {
-                var dirs = result.Select(it => it.Path.LocalPath).ToList();
-                var numAdded = onDirsSelected(dirs, out int numRemoved);
+                List<string> dirs = result.Select(it => it.Path.LocalPath).ToList();
+                int numAdded = onDirsSelected(dirs, out int numRemoved);
 
-                var msg = String.Join("\r\n", new string[] {
+                string msg = String.Join("\r\n", new string[] {
                     string.Format(LocaleManager.Instance[localeMessageRemovedKey], numRemoved),
                     string.Format(LocaleManager.Instance[localeMessageAddedKey], numAdded)
                 });
@@ -1563,17 +1184,17 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public void LoadConfigurableHotKeys()
         {
-            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUI, out var showUiKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUI, out Avalonia.Input.Key showUiKey))
             {
                 ShowUiKey = new KeyGesture(showUiKey);
             }
 
-            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot, out var screenshotKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot, out Avalonia.Input.Key screenshotKey))
             {
                 ScreenshotKey = new KeyGesture(screenshotKey);
             }
 
-            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause, out var pauseKey))
+            if (AvaloniaKeyboardMappingHelper.TryGetAvaKey((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause, out Avalonia.Input.Key pauseKey))
             {
                 PauseKey = new KeyGesture(pauseKey);
             }
@@ -1592,6 +1213,11 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void ToggleStartGamesInFullscreen()
         {
             StartGamesInFullscreen = !StartGamesInFullscreen;
+        }
+
+        public void ToggleStartGamesWithoutUI()
+        {
+            StartGamesWithoutUI = !StartGamesWithoutUI;
         }
 
         public void ToggleShowConsole()
@@ -1616,28 +1242,28 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async Task InstallFirmwareFromFile()
         {
-            var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            IReadOnlyList<IStorageFile> result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 AllowMultiple = false,
                 FileTypeFilter = new List<FilePickerFileType>
                 {
                     new(LocaleManager.Instance[LocaleKeys.FileDialogAllTypes])
                     {
-                        Patterns = new[] { "*.xci", "*.zip" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.xci", "public.zip-archive" },
-                        MimeTypes = new[] { "application/x-nx-xci", "application/zip" },
+                        Patterns = ["*.xci", "*.zip"],
+                        AppleUniformTypeIdentifiers = ["com.ryujinx.xci", "public.zip-archive"],
+                        MimeTypes = ["application/x-nx-xci", "application/zip"],
                     },
                     new("XCI")
                     {
-                        Patterns = new[] { "*.xci" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.xci" },
-                        MimeTypes = new[] { "application/x-nx-xci" },
+                        Patterns = ["*.xci"],
+                        AppleUniformTypeIdentifiers = ["com.ryujinx.xci"],
+                        MimeTypes = ["application/x-nx-xci"],
                     },
                     new("ZIP")
                     {
-                        Patterns = new[] { "*.zip" },
-                        AppleUniformTypeIdentifiers = new[] { "public.zip-archive" },
-                        MimeTypes = new[] { "application/zip" },
+                        Patterns = ["*.zip"],
+                        AppleUniformTypeIdentifiers = ["public.zip-archive"],
+                        MimeTypes = ["application/zip"],
                     },
                 },
             });
@@ -1650,7 +1276,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async Task InstallFirmwareFromFolder()
         {
-            var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            IReadOnlyList<IStorageFolder> result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 AllowMultiple = false,
             });
@@ -1663,28 +1289,28 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async Task InstallKeysFromFile()
         {
-            var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            IReadOnlyList<IStorageFile> result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 AllowMultiple = false,
                 FileTypeFilter = new List<FilePickerFileType>
                 {
                     new(LocaleManager.Instance[LocaleKeys.FileDialogAllTypes])
                     {
-                        Patterns = new[] { "*.keys", "*.zip" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.xci", "public.zip-archive" },
-                        MimeTypes = new[] { "application/keys", "application/zip" },
+                        Patterns = ["*.keys", "*.zip"],
+                        AppleUniformTypeIdentifiers = ["com.ryujinx.xci", "public.zip-archive"],
+                        MimeTypes = ["application/keys", "application/zip"],
                     },
                     new("KEYS")
                     {
-                        Patterns = new[] { "*.keys" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.xci" },
-                        MimeTypes = new[] { "application/keys" },
+                        Patterns = ["*.keys"],
+                        AppleUniformTypeIdentifiers = ["com.ryujinx.xci"],
+                        MimeTypes = ["application/keys"],
                     },
                     new("ZIP")
                     {
-                        Patterns = new[] { "*.zip" },
-                        AppleUniformTypeIdentifiers = new[] { "public.zip-archive" },
-                        MimeTypes = new[] { "application/zip" },
+                        Patterns = ["*.zip"],
+                        AppleUniformTypeIdentifiers = ["public.zip-archive"],
+                        MimeTypes = ["application/zip"],
                     },
                 },
             });
@@ -1697,7 +1323,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async Task InstallKeysFromFolder()
         {
-            var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            IReadOnlyList<IStorageFolder> result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 AllowMultiple = false,
             });
@@ -1788,7 +1414,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async Task OpenFile()
         {
-            var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            IReadOnlyList<IStorageFile> result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.OpenFileDialogTitle],
                 AllowMultiple = false,
@@ -1796,53 +1422,53 @@ namespace Ryujinx.Ava.UI.ViewModels
                 {
                     new(LocaleManager.Instance[LocaleKeys.AllSupportedFormats])
                     {
-                        Patterns = new[] { "*.nsp", "*.xci", "*.nca", "*.nro", "*.nso" },
-                        AppleUniformTypeIdentifiers = new[]
-                        {
+                        Patterns = ["*.nsp", "*.xci", "*.nca", "*.nro", "*.nso"],
+                        AppleUniformTypeIdentifiers =
+                        [
                             "com.ryujinx.nsp",
                             "com.ryujinx.xci",
                             "com.ryujinx.nca",
                             "com.ryujinx.nro",
-                            "com.ryujinx.nso",
-                        },
-                        MimeTypes = new[]
-                        {
+                            "com.ryujinx.nso"
+                        ],
+                        MimeTypes =
+                        [
                             "application/x-nx-nsp",
                             "application/x-nx-xci",
                             "application/x-nx-nca",
                             "application/x-nx-nro",
-                            "application/x-nx-nso",
-                        },
+                            "application/x-nx-nso"
+                        ],
                     },
                     new("NSP")
                     {
-                        Patterns = new[] { "*.nsp" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nsp" },
-                        MimeTypes = new[] { "application/x-nx-nsp" },
+                        Patterns = ["*.nsp"],
+                        AppleUniformTypeIdentifiers = ["com.ryujinx.nsp"],
+                        MimeTypes = ["application/x-nx-nsp"],
                     },
                     new("XCI")
                     {
-                        Patterns = new[] { "*.xci" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.xci" },
-                        MimeTypes = new[] { "application/x-nx-xci" },
+                        Patterns = ["*.xci"],
+                        AppleUniformTypeIdentifiers = ["com.ryujinx.xci"],
+                        MimeTypes = ["application/x-nx-xci"],
                     },
                     new("NCA")
                     {
-                        Patterns = new[] { "*.nca" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nca" },
-                        MimeTypes = new[] { "application/x-nx-nca" },
+                        Patterns = ["*.nca"],
+                        AppleUniformTypeIdentifiers = ["com.ryujinx.nca"],
+                        MimeTypes = ["application/x-nx-nca"],
                     },
                     new("NRO")
                     {
-                        Patterns = new[] { "*.nro" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nro" },
-                        MimeTypes = new[] { "application/x-nx-nro" },
+                        Patterns = ["*.nro"],
+                        AppleUniformTypeIdentifiers = ["com.ryujinx.nro"],
+                        MimeTypes = ["application/x-nx-nro"],
                     },
                     new("NSO")
                     {
-                        Patterns = new[] { "*.nso" },
-                        AppleUniformTypeIdentifiers = new[] { "com.ryujinx.nso" },
-                        MimeTypes = new[] { "application/x-nx-nso" },
+                        Patterns = ["*.nso"],
+                        AppleUniformTypeIdentifiers = ["com.ryujinx.nso"],
+                        MimeTypes = ["application/x-nx-nso"],
                     },
                 },
             });
@@ -1879,7 +1505,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public async Task OpenFolder()
         {
-            var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            IReadOnlyList<IStorageFolder> result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = LocaleManager.Instance[LocaleKeys.OpenFolderDialogTitle],
                 AllowMultiple = false,
@@ -1897,7 +1523,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public async Task LoadApplication(ApplicationData application, bool startFullscreen = false)
+        public async Task LoadApplication(ApplicationData application, bool startFullscreen = false, BlitStruct<ApplicationControlProperty>? customNacpData = null)
         {
             if (AppHost != null)
             {
@@ -1921,7 +1547,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             PrepareLoadScreen();
 
-            RendererHostControl = new RendererHost();
+            RendererHostControl = new RendererHost(application.Id.ToString("X16"));
 
             AppHost = new AppHost(
                 RendererHostControl,
@@ -1935,7 +1561,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 this,
                 TopLevel);
 
-            if (!await AppHost.LoadGuestApplication())
+            if (!await AppHost.LoadGuestApplication(customNacpData))
             {
                 AppHost.DisposeContext();
                 AppHost = null;
@@ -1996,7 +1622,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
             else
             {
-                LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarSystemVersion, "0.0");
+                LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.StatusBarSystemVersion, "NaN");
             }
 
             IsAppletMenuActive = hasApplet;
@@ -2034,16 +1660,13 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                Title = App.FormatTitle();
+                Title = RyujinxApp.FormatTitle();
             });
         }
 
         public async Task OpenAmiiboWindow()
         {
-            if (!IsAmiiboRequested)
-                return;
-
-            if (AppHost.Device.System.SearchingForAmiibo(out int deviceId))
+            if (AppHost.Device.System.SearchingForAmiibo(out int deviceId) && IsGameRunning)
             {
                 string titleId = AppHost.Device.Processes.ActiveApplication.ProgramIdText.ToUpper();
                 AmiiboWindow window = new(ShowAll, LastScannedAmiiboId, titleId);
@@ -2059,6 +1682,29 @@ namespace Ryujinx.Ava.UI.ViewModels
                 }
             }
         }
+        public async Task OpenBinFile()
+        {
+            if (AppHost.Device.System.SearchingForAmiibo(out _) && IsGameRunning)
+            {
+                IReadOnlyList<IStorageFile> result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = LocaleManager.Instance[LocaleKeys.OpenFileDialogTitle],
+                    AllowMultiple = false,
+                    FileTypeFilter = new List<FilePickerFileType>
+                    {
+                        new(LocaleManager.Instance[LocaleKeys.AllSupportedFormats])
+                        {
+                            Patterns = ["*.bin"],
+                        }
+                    }
+                });
+                if (result.Count > 0)
+                {
+                    AppHost.Device.System.ScanAmiiboFromBin(result[0].Path.LocalPath);
+                }
+            }
+        }
+
 
         public void ToggleFullscreen()
         {
@@ -2131,7 +1777,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public async void ProcessTrimResult(String filename, Ryujinx.Common.Utilities.XCIFileTrimmer.OperationOutcome operationOutcome)
+        public async void ProcessTrimResult(String filename, XCIFileTrimmer.OperationOutcome operationOutcome)
         {
             string notifyUser = operationOutcome.ToLocalisedText();
 
@@ -2146,12 +1792,8 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 switch (operationOutcome)
                 {
-                    case Ryujinx.Common.Utilities.XCIFileTrimmer.OperationOutcome.Successful:
-                        if (Avalonia.Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                        {
-                            if (desktop.MainWindow is MainWindow mainWindow)
-                                mainWindow.LoadApplications();
-                        }
+                    case XCIFileTrimmer.OperationOutcome.Successful:
+                        RyujinxApp.MainWindow.LoadApplications();
                         break;
                 }
             }
@@ -2164,16 +1806,16 @@ namespace Ryujinx.Ava.UI.ViewModels
                 return;
             }
 
-            var trimmer = new XCIFileTrimmer(filename, new Common.XCIFileTrimmerMainWindowLog(this));
+            XCIFileTrimmer trimmer = new(filename, new XCITrimmerLog.MainWindow(this));
 
             if (trimmer.CanBeTrimmed)
             {
-                var savings = (double)trimmer.DiskSpaceSavingsB / 1024.0 / 1024.0;
-                var currentFileSize = (double)trimmer.FileSizeB / 1024.0 / 1024.0;
-                var cartDataSize = (double)trimmer.DataSizeB / 1024.0 / 1024.0;
+                double savings = (double)trimmer.DiskSpaceSavingsB / 1024.0 / 1024.0;
+                double currentFileSize = (double)trimmer.FileSizeB / 1024.0 / 1024.0;
+                double cartDataSize = (double)trimmer.DataSizeB / 1024.0 / 1024.0;
                 string secondaryText = LocaleManager.Instance.UpdateAndGetDynamicValue(LocaleKeys.TrimXCIFileDialogSecondaryText, currentFileSize, cartDataSize, savings);
 
-                var result = await ContentDialogHelper.CreateConfirmationDialog(
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
                     LocaleManager.Instance[LocaleKeys.TrimXCIFileDialogPrimaryText],
                     secondaryText,
                     LocaleManager.Instance[LocaleKeys.Continue],

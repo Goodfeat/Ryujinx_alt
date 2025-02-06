@@ -1,35 +1,26 @@
-<h1 align="center">
+<table align="center">
+    <tr>
+        <td align="center" width="25%">
+            <img src="https://raw.githubusercontent.com/GreemDev/ryuassets/refs/heads/main/RyujinxApp_1024.png" alt="Ryujinx" >
+        </td>
+        <td align="center" width="75%">
+          
+# Ryujinx
+          
+[![Release workflow](https://github.com/Ryubing/Ryujinx/actions/workflows/release.yml/badge.svg)](https://github.com/Ryubing/Ryujinx/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/GreemDev/Ryujinx)](https://github.com/Ryubing/Ryujinx/releases/latest)
   <br>
-  <img src="https://raw.githubusercontent.com/GreemDev/Ryujinx/master/distribution/misc/Logo.svg" alt="Ryujinx" width="150"></a>
-  <br>
-  <b>Ryujinx</b>
-  <br>
-  <sub><sup><b>(REE-YOU-JINX)</b></sup></sub>
-  <br>
-    <a href="https://github.com/GreemDev/Ryujinx/actions/workflows/release.yml">
-        <img src="https://github.com/GreemDev/Ryujinx/actions/workflows/release.yml/badge.svg"
-            alt="">
-    </a>
-    <a href="https://github.com/GreemDev/Ryujinx/releases/latest">
-        <img src="https://img.shields.io/github/v/release/GreemDev/Ryujinx"
-            alt="Latest Release">
-    </a>
-  <br>
-    <a href="https://github.com/GreemDev/Ryujinx/actions/workflows/canary.yml">
-        <img src="https://github.com/GreemDev/Ryujinx/actions/workflows/canary.yml/badge.svg"
-            alt="">
-    </a>
-    <a href="https://github.com/GreemDev/Ryujinx-Canary/releases/latest">
-        <img src="https://img.shields.io/github/v/release/GreemDev/Ryujinx-Canary?label=canary"
-            alt="Latest Canary Release">
-    </a>
-</h1>
+[![Canary workflow](https://github.com/Ryubing/Ryujinx/actions/workflows/canary.yml/badge.svg)](https://github.com/Ryubing/Ryujinx/actions/workflows/canary.yml)
+[![Latest canary release](https://img.shields.io/github/v/release/Ryubing/Canary-Releases?label=canary)](https://github.com/Ryubing/Canary-Releases/releases/latest)
+        </td>
+    </tr>
+</table>
 
 <p align="center">
   Ryujinx is an open-source Nintendo Switch emulator, originally created by gdkchan, written in C#.
   This emulator aims at providing excellent accuracy and performance, a user-friendly interface and consistent builds.
   It was written from scratch and development on the project began in September 2017.
-  Ryujinx is available on Github under the <a href="https://github.com/GreemDev/Ryujinx/blob/master/LICENSE.txt" target="_blank">MIT license</a>.
+  Ryujinx is available on GitHub under the <a href="https://github.com/Ryubing/Ryujinx/blob/master/LICENSE.txt" target="_blank">MIT license</a>.
   <br />
 </p>
 <p align="center">
@@ -39,7 +30,7 @@
   <br>
   This is not a Ryujinx revival project. This is not a Phoenix project.
   <br>
-  Guides and documentation can be found on the <a href="https://github.com/GreemDev/Ryujinx/wiki">Wiki tab</a>.
+  Guides and documentation can be found on the <a href="https://github.com/Ryubing/Ryujinx/wiki">Wiki tab</a>.
 </p>
 <p align="center">
   If you would like a more preservative fork of Ryujinx, check out <a href="https://github.com/ryujinx-mirror/ryujinx">ryujinx-mirror</a>.
@@ -63,16 +54,17 @@ failing to meet this requirement may result in a poor gameplay experience or une
 
 ## Latest build
 
-Stable builds are made every so often onto a separate "release" branch that then gets put into the releases you know and love. 
+Stable builds are made every so often, based on the `master` branch, that then gets put into the releases you know and love.
 These stable builds exist so that the end user can get a more **enjoyable and stable experience**.
+They are released every month or so, to ensure consistent updates, while not being an annoying amount of individual updates to download over the course of that month.
 
-You can find the latest stable release [here](https://github.com/GreemDev/Ryujinx/releases/latest).
+You can find the latest stable release [here](https://github.com/Ryubing/Ryujinx/releases/latest).
 
-Canary builds are compiled automatically for each commit on the master branch.
+Canary builds are compiled automatically for each commit on the `master` branch.
 While we strive to ensure optimal stability and performance prior to pushing an update, these builds **may be unstable or completely broken**.
 These canary builds are only recommended for experienced users.
 
-You can find the latest canary release [here](https://github.com/GreemDev/Ryujinx-Canary/releases/latest).
+You can find the latest canary release [here](https://github.com/Ryubing/Canary-Releases/releases/latest).
 
 ## Documentation
 
@@ -91,7 +83,7 @@ If you are planning to contribute or just want to learn more about this project 
   It translates the ARM code to a custom IR, performs a few optimizations, and turns that into x86 code.
   There are three memory manager options available depending on the user's preference, leveraging both software-based (slower) and host-mapped modes (much faster).
   The fastest option (host, unchecked) is set by default.
-  Ryujinx also features an optional Profiled Persistent Translation Cache, which essentially caches translated functions so that they do not need to be translated every time the game loads. 
+  Ryujinx also features an optional Profiled Persistent Translation Cache, which essentially caches translated functions so that they do not need to be translated every time the game loads.
   The net result is a significant reduction in load times (the amount of time between launching a game and arriving at the title screen) for nearly every game.
   NOTE: This feature is enabled by default in the Options menu > System tab.
   You must launch the game at least twice to the title screen or beyond before performance improvements are unlocked on the third launch!
@@ -118,7 +110,7 @@ If you are planning to contribute or just want to learn more about this project 
 - **Configuration**
 
   The emulator has settings for enabling or disabling some logging, remapping controllers, and more.
-  You can configure all of them through the graphical interface or manually through the config file, `Config.json`, found in the user folder which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
+  You can configure all of them through the graphical interface or manually through the config file, `Config.json`, found in the Ryujinx data folder which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
 
 ## License
 

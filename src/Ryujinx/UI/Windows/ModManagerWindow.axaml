@@ -81,7 +81,7 @@
                                     MaxLines="2"
                                     TextWrapping="Wrap"
                                     TextTrimming="CharacterEllipsis"
-                                    Text="{Binding Name}" />
+                                    Text="{Binding FormattedName}" />
                                 <StackPanel
                                     Grid.Column="1"
                                     Spacing="10"
@@ -93,6 +93,7 @@
                                         Padding="10"
                                         MinWidth="0"
                                         MinHeight="0"
+                                        ToolTip.Tip="{Binding Path}"
                                         Click="OpenLocation">
                                         <ui:SymbolIcon
                                             Symbol="OpenFolder"

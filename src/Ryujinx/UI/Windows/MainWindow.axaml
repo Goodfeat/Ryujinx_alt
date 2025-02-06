@@ -30,9 +30,6 @@
     <Design.DataContext>
         <viewModels:MainWindowViewModel />
     </Design.DataContext>
-    <Window.Resources>
-        <helpers:BitmapArrayValueConverter x:Key="ByteImage" />
-    </Window.Resources>
     <Window.KeyBindings>
         <KeyBinding Gesture="Alt+Return" Command="{Binding ToggleFullscreen}" />
         <KeyBinding Gesture="F11" Command="{Binding ToggleFullscreen}" />
@@ -40,6 +37,7 @@
         <KeyBinding Gesture="F9" Command="{Binding ToggleDockMode}" />
         <KeyBinding Gesture="Escape" Command="{Binding ExitCurrentState}" />
         <KeyBinding Gesture="Ctrl+A" Command="{Binding OpenAmiiboWindow}" />
+        <KeyBinding Gesture="Ctrl+B" Command="{Binding OpenBinFile}" />
     </Window.KeyBindings>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowDefinitions="*">
         <helpers:OffscreenTextBox IsEnabled="False" Opacity="0" Name="HiddenTextBox" IsHitTestVisible="False" IsTabStop="False" />
@@ -120,7 +118,7 @@
                             Width="256"
                             Height="256"
                             IsVisible="{Binding ShowLoadProgress}"
-                            Source="{Binding SelectedIcon, Converter={StaticResource ByteImage}}" />
+                            Source="{Binding SelectedIcon, Converter={x:Static helpers:BitmapArrayValueConverter.Instance}}" />
                     </Border>
                     <Grid
                         Grid.Column="1"

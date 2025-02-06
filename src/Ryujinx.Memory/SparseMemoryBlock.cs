@@ -14,7 +14,7 @@ namespace Ryujinx.Memory
 
         private readonly PageInitDelegate _pageInit;
 
-        private readonly object _lock = new object();
+        private readonly Lock _lock = new();
         private readonly ulong _pageSize;
         private readonly MemoryBlock _reservedBlock;
         private readonly List<MemoryBlock> _mappedBlocks;
@@ -28,7 +28,7 @@ namespace Ryujinx.Memory
         {
             _pageSize = MemoryBlock.GetPageSize();
             _reservedBlock = new MemoryBlock(size, MemoryAllocationFlags.Reserve | MemoryAllocationFlags.ViewCompatible);
-            _mappedBlocks = new List<MemoryBlock>();
+            _mappedBlocks = [];
             _pageInit = pageInit;
 
             int pages = (int)BitUtils.DivRoundUp(size, _pageSize);

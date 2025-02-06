@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             // TODO: Call nn::arp::GetApplicationControlProperty here when implemented.
             ApplicationControlProperty controlProperty = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 
-            foreach (var localCommunicationId in controlProperty.LocalCommunicationId.ItemsRo)
+            foreach (ulong localCommunicationId in controlProperty.LocalCommunicationId.ItemsRo)
             {
                 if (localCommunicationId == localCommunicationIdChecked)
                 {
@@ -163,7 +163,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
             else
             {
-                return Array.Empty<NodeLatestUpdate>();
+                return [];
             }
         }
 
@@ -444,7 +444,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private ResultCode ScanInternal(IVirtualMemoryManager memory, ushort channel, ScanFilter scanFilter, ulong bufferPosition, ulong bufferSize, out ulong counter)
         {
-            ulong networkInfoSize = (ulong)Marshal.SizeOf(typeof(NetworkInfo));
+            ulong networkInfoSize = (ulong)Marshal.SizeOf<NetworkInfo>();
             ulong maxGames = bufferSize / networkInfoSize;
 
             MemoryHelper.FillWithZeros(memory, bufferPosition, (int)bufferSize);

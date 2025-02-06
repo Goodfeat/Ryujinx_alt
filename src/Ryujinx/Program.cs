@@ -5,24 +5,22 @@ using Gommon;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 using Projektanker.Icons.Avalonia.MaterialDesign;
-using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.UI.Helpers;
 using Ryujinx.Ava.UI.Windows;
+using Ryujinx.Ava.Utilities;
+using Ryujinx.Ava.Utilities.Configuration;
+using Ryujinx.Ava.Utilities.SystemInfo;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInterop;
 using Ryujinx.Graphics.Vulkan.MoltenVK;
+using Ryujinx.Headless;
 using Ryujinx.SDL2.Common;
-using Ryujinx.UI.App.Common;
-using Ryujinx.UI.Common;
-using Ryujinx.UI.Common.Configuration;
-using Ryujinx.UI.Common.Helper;
-using Ryujinx.UI.Common.SystemInfo;
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -46,15 +44,21 @@ namespace Ryujinx.Ava
         {
             Version = ReleaseInformation.Version;
             
-            if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
+            if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041))
             {
-                _ = MessageBoxA(nint.Zero, "You are running an outdated version of Windows.\n\nRyujinx supports Windows 10 version 1803 and newer.\n", $"Ryujinx {Version}", MbIconwarning);
+                _ = MessageBoxA(nint.Zero, "You are running an outdated version of Windows.\n\nRyujinx supports Windows 10 version 20H1 and newer.\n", $"Ryujinx {Version}", MbIconwarning);
             }
 
             PreviewerDetached = true;
+            
+            if (args.Length > 0 && args[0] is "--no-gui" or "nogui")
+            {
+                HeadlessRyujinx.Entrypoint(args[1..]);
+                return 0;
+            }
 
             Initialize(args);
-
+            
             LoggerAdapter.Register();
 
             IconProvider.Current
@@ -65,7 +69,7 @@ namespace Ryujinx.Ava
         }
 
         public static AppBuilder BuildAvaloniaApp() =>
-            AppBuilder.Configure<App>()
+            AppBuilder.Configure<RyujinxApp>()
                 .UsePlatformDetect()
                 .With(new X11PlatformOptions
                 {
@@ -87,7 +91,7 @@ namespace Ryujinx.Ava
         private static void Initialize(string[] args)
         {
             // Ensure Discord presence timestamp begins at the absolute start of when Ryujinx is launched
-            DiscordIntegrationModule.StartedAt = Timestamps.Now;
+            DiscordIntegrationModule.EmulatorStartedAt = Timestamps.Now;
 
             // Parse arguments
             CommandLineState.ParseArguments(args);
@@ -100,18 +104,19 @@ namespace Ryujinx.Ava
             // Delete backup files after updating.
             Task.Run(Updater.CleanupUpdate);
 
-            Console.Title = $"{App.FullAppName} Console {Version}";
+            Console.Title = $"{RyujinxApp.FullAppName} Console {Version}";
 
             // Hook unhandled exception and process exit events.
             AppDomain.CurrentDomain.UnhandledException += (sender, e)
                 => ProcessUnhandledException(sender, e.ExceptionObject as Exception, e.IsTerminating);
+            TaskScheduler.UnobservedTaskException += (sender, e)
+                => ProcessUnhandledException(sender, e.Exception, false); 
             AppDomain.CurrentDomain.ProcessExit += (_, _) => Exit();
 
+
+            
             // Setup base data directory.
             AppDataManager.Initialize(CommandLineState.BaseDirPathArg);
-
-            // Set the delegate for localizing the word "never" in the UI
-            ApplicationData.LocalizedNever = () => LocaleManager.Instance[LocaleKeys.Never];
 
             // Initialize the configuration.
             ConfigurationState.Initialize();
@@ -198,7 +203,18 @@ namespace Ryujinx.Ava
                 {
                     "opengl" => GraphicsBackend.OpenGl,
                     "vulkan" => GraphicsBackend.Vulkan,
+                    "metal" => GraphicsBackend.Metal,
                     _ => ConfigurationState.Instance.Graphics.GraphicsBackend
+                };
+
+            // Check if backend threading was overridden
+            if (CommandLineState.OverrideBackendThreading is not null)
+                ConfigurationState.Instance.Graphics.BackendThreading.Value = CommandLineState.OverrideBackendThreading.ToLower() switch
+                {
+                    "auto" => BackendThreading.Auto,
+                    "off" => BackendThreading.Off,
+                    "on" => BackendThreading.On,
+                    _ => ConfigurationState.Instance.Graphics.BackendThreading
                 };
 
             // Check if docked mode was overriden.
@@ -222,16 +238,19 @@ namespace Ryujinx.Ava
                 UseHardwareAcceleration = CommandLineState.OverrideHardwareAcceleration.Value;
         }
 
-        private static void PrintSystemInfo()
+        internal static void PrintSystemInfo()
         {
-            Logger.Notice.Print(LogClass.Application, $"{App.FullAppName} Version: {Version}");
+            Logger.Notice.Print(LogClass.Application, $"{RyujinxApp.FullAppName} Version: {Version}");
+            Logger.Notice.Print(LogClass.Application, $".NET Runtime: {RuntimeInformation.FrameworkDescription}");
             SystemInfo.Gather().Print();
 
-            var enabledLogLevels = Logger.GetEnabledLevels().ToArray();
-
-            Logger.Notice.Print(LogClass.Application, $"Logs Enabled: {(enabledLogLevels.Length is 0
-                    ? "<None>"
-                    : enabledLogLevels.JoinToString(", "))}");
+            Logger.Notice.Print(LogClass.Application, $"Logs Enabled: {
+                Logger.GetEnabledLevels()
+                    .FormatCollection(
+                        x => x.ToString(), 
+                        separator: ", ", 
+                        emptyCollectionFallback: "<None>")
+            }");
 
             Logger.Notice.Print(LogClass.Application,
                 AppDataManager.Mode == AppDataManager.LaunchMode.Custom
@@ -239,22 +258,37 @@ namespace Ryujinx.Ava
                     : $"Launch Mode: {AppDataManager.Mode}");
         }
 
-        private static void ProcessUnhandledException(object sender, Exception ex, bool isTerminating)
+        internal static void ProcessUnhandledException(object sender, Exception initialException, bool isTerminating)
         {
             Logger.Log log = Logger.Error ?? Logger.Notice;
-            string message = $"Unhandled exception caught: {ex}";
 
-            // ReSharper disable once ConstantConditionalAccessQualifier
-            if (sender?.GetType()?.AsPrettyString() is { } senderName)
-                log.Print(LogClass.Application, message, senderName);
+            List<Exception> exceptions = [];
+
+            if (initialException is AggregateException ae)
+            {
+                exceptions.AddRange(ae.InnerExceptions);
+            }
             else
-                log.PrintMsg(LogClass.Application, message);
+            {
+                exceptions.Add(initialException);
+            }
 
+            foreach (Exception e in exceptions)
+            {
+                string message = $"Unhandled exception caught: {e}";
+                // ReSharper disable once ConstantConditionalAccessQualifier
+                if (sender?.GetType()?.AsPrettyString() is { } senderName)
+                    log.Print(LogClass.Application, message, senderName);
+                else
+                    log.PrintMsg(LogClass.Application, message);
+            }
+            
+            
             if (isTerminating)
                 Exit();
         }
 
-        public static void Exit()
+        internal static void Exit()
         {
             DiscordIntegrationModule.Exit();
 

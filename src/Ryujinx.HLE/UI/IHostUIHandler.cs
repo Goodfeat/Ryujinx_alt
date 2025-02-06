@@ -1,4 +1,5 @@
 using Ryujinx.HLE.HOS.Applets;
+using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
 
 namespace Ryujinx.HLE.UI
@@ -25,6 +26,18 @@ namespace Ryujinx.HLE.UI
         bool DisplayMessageDialog(ControllerAppletUIArgs args);
 
         /// <summary>
+        /// Displays an Input Dialog box to the user so they can enter the Amiibo's new name
+        /// </summary>
+        /// <param name="userText">Text that the user entered. Set to `null` on internal errors</param>
+        /// <returns>True when OK is pressed, False otherwise. Also returns True on internal errors</returns>
+        bool DisplayCabinetDialog(out string userText);
+
+        /// <summary>
+        /// Displays a Message Dialog box to the user to notify them to scan the Amiibo.
+        /// </summary>
+        void DisplayCabinetMessageDialog();
+
+        /// <summary>
         /// Tell the UI that we need to transition to another program.
         /// </summary>
         /// <param name="device">The device instance.</param>
@@ -47,5 +60,11 @@ namespace Ryujinx.HLE.UI
         /// Gets fonts and colors used by the host.
         /// </summary>
         IHostUITheme HostUITheme { get; }
+        
+        
+        /// <summary>
+        /// Displays the player select dialog and returns the selected profile.
+        /// </summary>
+        UserProfile ShowPlayerSelectDialog();
     }
 }

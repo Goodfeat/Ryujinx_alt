@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefaultItemExcludes>$(DefaultItemExcludes);._*</DefaultItemExcludes>
   </PropertyGroup>
@@ -49,6 +48,7 @@
     <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnB.png" />
     <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Icon_KeyF6.png" />
     <EmbeddedResource Include="HOS\Services\Account\Acc\DefaultUserImage.jpg" />
+    <EmbeddedResource Include="HOS\Services\Account\Acc\GuestUserImage.jpg" />
   </ItemGroup>
 
 </Project>

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Ryujinx.Cpu.Signal
 {
@@ -59,7 +60,7 @@ namespace Ryujinx.Cpu.Signal
 
         private static MemoryBlock _codeBlock;
 
-        private static readonly object _lock = new();
+        private static readonly Lock _lock = new();
         private static bool _initialized;
 
         static NativeSignalHandler()
@@ -97,7 +98,7 @@ namespace Ryujinx.Cpu.Signal
                         _signalHandlerPtr = customSignalHandlerFactory(UnixSignalHandlerRegistration.GetSegfaultExceptionHandler().sa_handler, _signalHandlerPtr);
                     }
 
-                    var old = UnixSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
+                    UnixSignalHandlerRegistration.SigAction old = UnixSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
 
                     config.UnixOldSigaction = (nuint)(ulong)old.sa_handler;
                     config.UnixOldSigaction3Arg = old.sa_flags & 4;
