@@ -1,5 +1,6 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -26,6 +27,7 @@ using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
@@ -67,6 +69,49 @@ namespace Ryujinx.Ava.UI.ViewModels
         [ObservableProperty] private string _ldnServer;
 
         public SettingsHacksViewModel DirtyHacks { get; }
+        public string GamePath { get; }
+        public string GameName { get; }
+
+        private Bitmap _gameIcon;
+
+        private string _gameTitle;
+        private string _gameId;
+        public Bitmap GameIcon
+        {
+            get => _gameIcon;
+            set
+            {
+                if (_gameIcon != value)
+                {
+                    _gameIcon = value;
+                }
+            }
+        }
+
+        public string GameTitle
+        {
+            get => _gameTitle;
+            set
+            {
+                if (_gameTitle != value)
+                {
+                    _gameTitle = value;
+                }
+            }
+        }
+
+        public string GameId
+        {
+            get => _gameId;
+            set
+            {
+                if (_gameId != value)
+                {
+                    _gameId = value;
+                }
+            }
+        }
+
 
         public int ResolutionScale
         {
@@ -342,6 +387,37 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
+        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, string gamePath, string gameName, string gameId, byte[] gameIconData) : this()
+        {
+            _virtualFileSystem = virtualFileSystem;
+            _contentManager = contentManager;
+  
+            if (gameIconData != null && gameIconData.Length > 0)
+            {
+                using (var ms = new MemoryStream(gameIconData))
+                {
+                    GameIcon = new Bitmap(ms);
+                }
+            }
+
+            GameTitle = gameName;
+            GameId = gameId;
+
+            string gameDir = Program.GetDirGameUserConfig(gameId);
+            if (ConfigurationFileFormat.TryLoad(gameDir, out ConfigurationFileFormat configurationFileFormat))
+            {
+                ConfigurationState.Instance.Load(configurationFileFormat, gameDir, gameId);
+                LoadCurrentConfiguration(); // Needed to load custom configuration
+            }
+
+            if (Program.PreviewerDetached)
+            {
+                Task.Run(LoadTimeZones);
+
+                DirtyHacks = new SettingsHacksViewModel(this);
+            }
+        }
+
         public SettingsViewModel()
         {
             GameDirectories = [];
@@ -467,28 +543,30 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void LoadCurrentConfiguration()
         {
             ConfigurationState config = ConfigurationState.Instance;
-
-            // User Interface
-            EnableDiscordIntegration = config.EnableDiscordIntegration;
-            CheckUpdatesOnStart = config.CheckUpdatesOnStart;
-            ShowConfirmExit = config.ShowConfirmExit;
-            RememberWindowState = config.RememberWindowState;
-            ShowTitleBar = config.ShowTitleBar;
-            HideCursor = (int)config.HideCursor.Value;
-
-            GameDirectories.Clear();
-            GameDirectories.AddRange(config.UI.GameDirs.Value);
-
-            AutoloadDirectories.Clear();
-            AutoloadDirectories.AddRange(config.UI.AutoloadDirs.Value);
-
-            BaseStyleIndex = config.UI.BaseStyle.Value switch
+            if (string.IsNullOrEmpty(GameId))
             {
-                "Auto" => 0,
-                "Light" => 1,
-                "Dark" => 2,
-                _ => 0
-            };
+                // User Interface
+                EnableDiscordIntegration = config.EnableDiscordIntegration;
+                CheckUpdatesOnStart = config.CheckUpdatesOnStart;
+                ShowConfirmExit = config.ShowConfirmExit;
+                RememberWindowState = config.RememberWindowState;
+                ShowTitleBar = config.ShowTitleBar;
+                HideCursor = (int)config.HideCursor.Value;
+
+                GameDirectories.Clear();
+                GameDirectories.AddRange(config.UI.GameDirs.Value);
+
+                AutoloadDirectories.Clear();
+                AutoloadDirectories.AddRange(config.UI.AutoloadDirs.Value);
+
+                BaseStyleIndex = config.UI.BaseStyle.Value switch
+                {
+                    "Auto" => 0,
+                    "Light" => 1,
+                    "Dark" => 2,
+                    _ => 0
+                };
+            }
 
             // Input
             EnableDockedMode = config.System.EnableDockedMode;
@@ -569,7 +647,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             LdnServer = config.Multiplayer.LdnServer;
         }
 
-        public void SaveSettings()
+        public void SaveSettings2()
         {
             ConfigurationState config = ConfigurationState.Instance;
 
@@ -583,12 +661,12 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             if (GameDirectoryChanged)
             {
-                config.UI.GameDirs.Value = [..GameDirectories];
+                config.UI.GameDirs.Value = [.. GameDirectories];
             }
 
             if (AutoloadDirectoryChanged)
             {
-                config.UI.AutoloadDirs.Value = [..AutoloadDirectories];
+                config.UI.AutoloadDirs.Value = [.. AutoloadDirectories];
             }
 
             config.UI.BaseStyle.Value = BaseStyleIndex switch
@@ -598,6 +676,55 @@ namespace Ryujinx.Ava.UI.ViewModels
                 2 => "Dark",
                 _ => "Auto"
             };
+
+            if (!string.IsNullOrEmpty(GameId))
+            {
+                config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            }
+            else
+            {
+                config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            }
+        }
+
+        public void SaveSettings()
+        {
+            ConfigurationState config = ConfigurationState.Instance;
+
+
+            if (string.IsNullOrEmpty(GameId))
+            {
+                // User Interface
+                config.EnableDiscordIntegration.Value = EnableDiscordIntegration;
+                config.CheckUpdatesOnStart.Value = CheckUpdatesOnStart;
+                config.ShowConfirmExit.Value = ShowConfirmExit;
+                config.RememberWindowState.Value = RememberWindowState;
+                config.ShowTitleBar.Value = ShowTitleBar;
+                config.HideCursor.Value = (HideCursorMode)HideCursor;
+
+                if (GameDirectoryChanged)
+                {
+                    config.UI.GameDirs.Value = [.. GameDirectories];
+                }
+
+                if (AutoloadDirectoryChanged)
+                {
+                    config.UI.AutoloadDirs.Value = [.. AutoloadDirectories];
+                }
+
+                //if (!string.IsNullOrEmpty(Program.GlobalConfigurationPath))
+                // {
+                //    config.ToFileFormat().SaveConfig(Program.GlobalConfigurationPath);
+                // }
+
+                config.UI.BaseStyle.Value = BaseStyleIndex switch
+                {
+                    0 => "Auto",
+                    1 => "Light",
+                    2 => "Dark",
+                    _ => "Auto"
+                };
+            }
 
             // Input
             config.System.EnableDockedMode.Value = EnableDockedMode;
@@ -693,7 +820,14 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Hacks.EnableShaderTranslationDelay.Value = DirtyHacks.ShaderTranslationDelayEnabled;
             config.Hacks.ShaderTranslationDelay.Value = DirtyHacks.ShaderTranslationDelay;
 
-            config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            if (!string.IsNullOrEmpty(GameId))
+            {
+                config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            }
+            else
+            {
+                config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            }
 
             MainWindow.UpdateGraphicsConfig();
             RyujinxApp.MainWindow.ViewModel.VSyncModeSettingChanged();
@@ -706,12 +840,38 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         private static void RevertIfNotSaved()
         {
-            Program.ReloadConfig();
+            if (!string.IsNullOrEmpty(Program.GlobalConfigurationPath))
+            {
+
+            }
+            else
+            {
+                Program.ReloadConfig();
+            }
+                
+            
         }
 
         public void ApplyButton()
         {
             SaveSettings();
+        }
+
+        public void DeleteConfigGame()
+        {
+            string gameDir = Program.GetDirGameUserConfig(GameId);
+
+            if (File.Exists(gameDir))
+            {
+                File.Delete(gameDir);
+            }
+            CloseWindow?.Invoke();
+        }
+        public void SaveUserConfig()
+        {
+            SaveSettings();
+            RevertIfNotSaved();
+            CloseWindow?.Invoke();
         }
 
         public void OkButton()
