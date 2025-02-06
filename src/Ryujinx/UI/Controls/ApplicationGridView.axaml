@@ -83,7 +83,7 @@
                                             Text="User Config"
                                             TextAlignment="Center"
                                             TextWrapping="Wrap"
-                                            Foreground="Yellow" />
+                                            Foreground="{DynamicResource Warning}" />
                                     </StackPanel>
                                 </Panel>
                             </Grid>

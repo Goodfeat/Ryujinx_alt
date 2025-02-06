@@ -151,7 +151,7 @@
                                         Text="User Config"
                                         TextAlignment="Start"
                                         TextWrapping="Wrap"
-                                        Foreground="Yellow" />
+                                        Foreground="{DynamicResource Warning}" />
                                 </StackPanel>
                                 <StackPanel
                                     Grid.Column="4"
