@@ -30,7 +30,7 @@ namespace Ryujinx.Ava.UI.Windows
 
         public UserConfigWindows(MainWindowViewModel viewModel)
         {
-            Title = RyujinxApp.FormatTitle(LocaleKeys.Settings);
+            Title = string.Format(LocaleManager.Instance[LocaleKeys.SettingsWithInfo], viewModel.SelectedApplication.Name, viewModel.SelectedApplication.IdString);
 
             DataContext = ViewModel = new SettingsViewModel(
                 viewModel.VirtualFileSystem, 
@@ -74,8 +74,8 @@ namespace Ryujinx.Ava.UI.Windows
                 switch (navItem.Tag.ToString())
                 {
                     case nameof(InputPage):
-                       NavPanel.Content = InputPage;
-                       break;
+                        NavPanel.Content = InputPage;
+                        break;
                     case nameof(SystemPage):
                         SystemPage.ViewModel = ViewModel;
                         NavPanel.Content = SystemPage;
