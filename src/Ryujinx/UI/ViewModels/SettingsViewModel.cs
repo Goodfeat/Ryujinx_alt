@@ -74,7 +74,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         public string GameName { get; }
 
         private Bitmap _gameIcon;
-
         private string _gameTitle;
         private string _gameId;
         public Bitmap GameIcon
@@ -375,7 +374,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
         public bool IsInvalidLdnPassphraseVisible { get; set; }
 
-        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this()
+        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager) : this(false)
         {
             _virtualFileSystem = virtualFileSystem;
             _contentManager = contentManager;
@@ -388,7 +387,13 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, string gamePath, string gameName, string gameId, byte[] gameIconData) : this()
+        public SettingsViewModel(VirtualFileSystem virtualFileSystem, 
+            ContentManager contentManager,
+            string gamePath,
+            string gameName, 
+            string gameId, 
+            byte[] gameIconData, 
+            bool enableToLoadCustomConfig) : this(enableToLoadCustomConfig)
         {
             _virtualFileSystem = virtualFileSystem;
             _contentManager = contentManager;
@@ -404,10 +409,14 @@ namespace Ryujinx.Ava.UI.ViewModels
             GameTitle = gameName;
             GameId = gameId;
 
-            string gameDir = Program.GetDirGameUserConfig(gameId,false,true);
-            if (ConfigurationFileFormat.TryLoad(gameDir, out ConfigurationFileFormat configurationFileFormat))
+            if (enableToLoadCustomConfig) // During the game. If there is no user config, then load the global config window
             {
-                ConfigurationState.Instance.Load(configurationFileFormat, gameDir, gameId);
+                string gameDir = Program.GetDirGameUserConfig(gameId, false, true);
+                if (ConfigurationFileFormat.TryLoad(gameDir, out ConfigurationFileFormat configurationFileFormat))
+                {
+                    ConfigurationState.Instance.Load(configurationFileFormat, gameDir, gameId);                 
+                }
+
                 LoadCurrentConfiguration(); // Needed to load custom configuration
             }
 
@@ -419,7 +428,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public SettingsViewModel()
+        public SettingsViewModel(bool noLoadGlobalConfig = false)
         {
             GameDirectories = [];
             AutoloadDirectories = [];
@@ -434,7 +443,11 @@ namespace Ryujinx.Ava.UI.ViewModels
             if (Program.PreviewerDetached)
             {
                 Task.Run(LoadAvailableGpus);
-                LoadCurrentConfiguration();
+
+                if (!noLoadGlobalConfig)// Default is false, but loading custom config avoids double call
+                {
+                    LoadCurrentConfiguration();
+                }
 
                 DirtyHacks = new SettingsHacksViewModel(this);
             }
@@ -545,7 +558,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             ConfigurationState config = ConfigurationState.Instance;
 
-            if (string.IsNullOrEmpty(GameId))
+            //It is necessary that the data is used from the global configuration file
+            if (string.IsNullOrEmpty(GameId)) 
             {
                 // User Interface
                 EnableDiscordIntegration = config.EnableDiscordIntegration;
@@ -568,6 +582,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                     "Dark" => 2,
                     _ => 0
                 };
+
             }
 
             // Input
@@ -588,7 +603,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             DateTime currentDateTime = currentHostDateTime.Add(systemDateTimeOffset);
             CurrentDate = currentDateTime.Date;
             CurrentTime = currentDateTime.TimeOfDay;
-
             MatchSystemTime = config.System.MatchSystemTime;
 
             EnableCustomVSyncInterval = config.Graphics.EnableCustomVSyncInterval;
@@ -648,53 +662,13 @@ namespace Ryujinx.Ava.UI.ViewModels
             LdnPassphrase = config.Multiplayer.LdnPassphrase;
             LdnServer = config.Multiplayer.LdnServer;
         }
-
-        public void SaveSettings2()
-        {
-            ConfigurationState config = ConfigurationState.Instance;
-
-            // User Interface
-            config.EnableDiscordIntegration.Value = EnableDiscordIntegration;
-            config.CheckUpdatesOnStart.Value = CheckUpdatesOnStart;
-            config.ShowConfirmExit.Value = ShowConfirmExit;
-            config.RememberWindowState.Value = RememberWindowState;
-            config.ShowTitleBar.Value = ShowTitleBar;
-            config.HideCursor.Value = (HideCursorMode)HideCursor;
-
-            if (GameDirectoryChanged)
-            {
-                config.UI.GameDirs.Value = [.. GameDirectories];
-            }
-
-            if (AutoloadDirectoryChanged)
-            {
-                config.UI.AutoloadDirs.Value = [.. AutoloadDirectories];
-            }
-
-            config.UI.BaseStyle.Value = BaseStyleIndex switch
-            {
-                0 => "Auto",
-                1 => "Light",
-                2 => "Dark",
-                _ => "Auto"
-            };
-
-            if (!string.IsNullOrEmpty(GameId))
-            {
-                config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-            }
-            else
-            {
-                config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-            }
-        }
-
+     
         public void SaveSettings()
         {
             ConfigurationState config = ConfigurationState.Instance;
+            bool userConfigFile = string.IsNullOrEmpty(GameId);
 
-
-            if (string.IsNullOrEmpty(GameId))
+            if (userConfigFile)
             {
                 // User Interface
                 config.EnableDiscordIntegration.Value = EnableDiscordIntegration;
@@ -842,6 +816,26 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void ApplyButton()
         {
             SaveSettings();
+        }
+
+        public void DeleteConfigGame()
+        {
+            string gameDir = Program.GetDirGameUserConfig(GameId,false,false);
+
+            if (File.Exists(gameDir))
+            {
+                File.Delete(gameDir);
+            }
+
+            RevertIfNotSaved();
+            CloseWindow?.Invoke();
+        }
+
+        public void SaveUserConfig()
+        {
+            SaveSettings();
+            RevertIfNotSaved(); // Revert global configuration after saving user configuration
+            CloseWindow?.Invoke();
         }
 
         public void DeleteConfigGame()

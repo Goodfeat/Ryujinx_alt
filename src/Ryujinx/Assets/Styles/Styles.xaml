@@ -44,7 +44,6 @@
                 </Grid>
                 <ui:NumberBox Value="1" />
                 <MenuItem
-                    IconSource="Settings"
                     Header="123 0000"
                     ToolTip.Tip="What this"/>
             </StackPanel>

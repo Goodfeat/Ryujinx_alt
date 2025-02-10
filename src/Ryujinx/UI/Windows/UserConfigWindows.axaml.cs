@@ -28,9 +28,9 @@ namespace Ryujinx.Ava.UI.Windows
     {
         internal readonly SettingsViewModel ViewModel;
 
-        public UserConfigWindows(MainWindowViewModel viewModel)
+        public UserConfigWindows(MainWindowViewModel viewModel, bool findUserConfigDir = true)
         {
-            Title = RyujinxApp.FormatTitle(LocaleKeys.Settings);
+            Title = string.Format(LocaleManager.Instance[LocaleKeys.SettingsWithInfo], viewModel.SelectedApplication.Name, viewModel.SelectedApplication.IdString);
 
             DataContext = ViewModel = new SettingsViewModel(
                 viewModel.VirtualFileSystem, 
@@ -38,9 +38,11 @@ namespace Ryujinx.Ava.UI.Windows
                 viewModel.SelectedApplication.Path,
                 viewModel.SelectedApplication.Name,
                 viewModel.SelectedApplication.IdString,
-                viewModel.SelectedApplication.Icon);
+                viewModel.SelectedApplication.Icon,
+                findUserConfigDir);
 
             ViewModel.CloseWindow += Close;
+            ViewModel.SaveSettingsEvent += SaveSettings;
 
             InitializeComponent();
             Load();
@@ -49,6 +51,11 @@ namespace Ryujinx.Ava.UI.Windows
             this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Alt));
 #endif
            
+        }
+
+        public void SaveSettings()
+        {
+            InputPage.InputView?.SaveCurrentProfile();
         }
 
 
@@ -67,9 +74,9 @@ namespace Ryujinx.Ava.UI.Windows
             {
                 switch (navItem.Tag.ToString())
                 {
-                    //case nameof(InputPage):
-                    //   NavPanel.Content = InputPage;
-                    //   break;
+                    case nameof(InputPage):
+                        NavPanel.Content = InputPage;
+                        break;
                     case nameof(SystemPage):
                         SystemPage.ViewModel = ViewModel;
                         NavPanel.Content = SystemPage;
@@ -101,7 +108,8 @@ namespace Ryujinx.Ava.UI.Windows
         }
 
         protected override void OnClosing(WindowClosingEventArgs e)
-        {   
+        {
+            InputPage.Dispose(); // You need to unload the gamepad settings, otherwise the controls will be blocked
             base.OnClosing(e);
         }
     }

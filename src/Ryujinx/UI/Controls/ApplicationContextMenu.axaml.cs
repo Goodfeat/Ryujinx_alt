@@ -414,7 +414,6 @@ namespace Ryujinx.Ava.UI.Controls
 
                 viewModel.RefreshView();
             }
-
         }
 
         public async void OpenApplicationCompatibility_Click(object sender, RoutedEventArgs args)

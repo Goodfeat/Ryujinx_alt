@@ -1543,7 +1543,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "由 {0} 开发",
         "zh_TW": ""
       }
     },
@@ -1576,50 +1576,50 @@
       "ID": "GameListHeaderTimePlayed",
       "Translations": {
         "ar_SA": "",
-        "de_DE": "Spielzeit: {0}",
-        "el_GR": "Χρόνος: {0}",
-        "en_US": "Play Time: {0}",
-        "es_ES": "Tiempo jugado: {0}",
-        "fr_FR": "Temps de jeu: {0}",
+        "de_DE": "Spielzeit:",
+        "el_GR": "Χρόνος:",
+        "en_US": "Play Time:",
+        "es_ES": "Tiempo jugado:",
+        "fr_FR": "Temps de jeu:",
         "he_IL": "",
-        "it_IT": "Tempo di gioco: {0}",
-        "ja_JP": "プレイ時間: {0}",
-        "ko_KR": "플레이 타임: {0}",
-        "no_NO": "Spilletid: {0}",
-        "pl_PL": "Czas w grze: {0}",
-        "pt_BR": "Tempo de jogo: {0}",
-        "ru_RU": "Время в игре: {0}",
-        "sv_SE": "Speltid: {0}",
-        "th_TH": "เล่นไปแล้ว: {0}",
-        "tr_TR": "Oynama Süresi: {0}",
-        "uk_UA": "Зіграно часу: {0}",
-        "zh_CN": "游玩时长: {0}",
-        "zh_TW": "遊玩時數: {0}"
+        "it_IT": "Tempo di gioco:",
+        "ja_JP": "プレイ時間:",
+        "ko_KR": "플레이 타임:",
+        "no_NO": "Spilletid:",
+        "pl_PL": "Czas w grze:",
+        "pt_BR": "Tempo de jogo:",
+        "ru_RU": "Время в игре:",
+        "sv_SE": "Speltid:",
+        "th_TH": "เล่นไปแล้ว:",
+        "tr_TR": "Oynama Süresi:",
+        "uk_UA": "Зіграно часу:",
+        "zh_CN": "游玩时长:",
+        "zh_TW": "遊玩時數:"
       }
     },
     {
       "ID": "GameListHeaderLastPlayed",
       "Translations": {
         "ar_SA": "",
-        "de_DE": "Zuletzt gespielt: {0}",
-        "el_GR": "Παίχτηκε: {0}",
-        "en_US": "Last Played: {0}",
-        "es_ES": "Jugado por última vez: {0}",
-        "fr_FR": "Dernière partie jouée: {0}",
+        "de_DE": "Zuletzt gespielt: ",
+        "el_GR": "Παίχτηκε: ",
+        "en_US": "Last Played:",
+        "es_ES": "Jugado por última vez:",
+        "fr_FR": "Dernière partie jouée:",
         "he_IL": "",
-        "it_IT": "Ultima partita: {0}",
-        "ja_JP": "最終プレイ日時: {0}",
-        "ko_KR": "마지막 플레이: {0}",
-        "no_NO": "Sist Spilt: {0}",
-        "pl_PL": "Ostatnio grane: {0}",
-        "pt_BR": "Último jogo: {0}",
-        "ru_RU": "Последний запуск: {0}",
-        "sv_SE": "Senast spelad: {0}",
-        "th_TH": "เล่นล่าสุด: {0}",
-        "tr_TR": "Son Oynama Tarihi: {0}",
-        "uk_UA": "Востаннє зіграно: {0}",
-        "zh_CN": "最近游玩: {0}",
-        "zh_TW": "最近遊玩: {0}"
+        "it_IT": "Ultima partita:",
+        "ja_JP": "最終プレイ日時:",
+        "ko_KR": "마지막 플레이:",
+        "no_NO": "Sist Spilt:",
+        "pl_PL": "Ostatnio grane:",
+        "pt_BR": "Último jogo:",
+        "ru_RU": "Последний запуск:",
+        "sv_SE": "Senast spelad:",
+        "th_TH": "เล่นล่าสุด:",
+        "tr_TR": "Son Oynama Tarihi:",
+        "uk_UA": "Востаннє зіграно:",
+        "zh_CN": "最近游玩:",
+        "zh_TW": "最近遊玩:"
       }
     },
     {
@@ -1843,7 +1843,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "兼容性:",
         "zh_TW": ""
       }
     },
@@ -1868,7 +1868,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "标题 ID:",
         "zh_TW": ""
       }
     },
@@ -1893,7 +1893,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "服务的游戏: {0}",
         "zh_TW": ""
       }
     },
@@ -1918,7 +1918,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "在线玩家: {0}",
         "zh_TW": ""
       }
     },
@@ -2268,7 +2268,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "清理 PPTC 缓存",
         "zh_TW": ""
       }
     },
@@ -2293,7 +2293,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "删除应用程序的所有 PPTC 缓存",
         "zh_TW": ""
       }
     },
@@ -2723,6 +2723,31 @@
       }
     },
     {
+      "ID": "GameListContextMenuEditGameConfiguration",
+      "Translations": {
+        "ar_SA": "تعديل تكوين اللعبة",
+        "de_DE": "Spielkonfiguration bearbeiten",
+        "el_GR": "Επεξεργασία ρυθμίσεων παιχνιδιού",
+        "en_US": "Edit Game Configuration",
+        "es_ES": "Editar configuración del juego",
+        "fr_FR": "Modifier la configuration du jeu",
+        "he_IL": "ערוך את הגדרת המשחק",
+        "it_IT": "Modifica configurazione gioco",
+        "ja_JP": "ゲーム設定を編集",
+        "ko_KR": "게임 설정 편집",
+        "no_NO": "Rediger spillkonfig.",
+        "pl_PL": "Edytuj konfigurację gry",
+        "pt_BR": "Editar configuração do jogo",
+        "ru_RU": "Редактировать конфигурацию игры",
+        "sv_SE": "Redigera spelkonfiguration",
+        "th_TH": "แก้ไขการตั้งค่าเกม",
+        "tr_TR": "Oyunun yapılandırmasını düzenle",
+        "uk_UA": "Редагувати конфігурацію гри",
+        "zh_CN": "编辑游戏配置",
+        "zh_TW": "編輯遊戲設定"
+      }
+    },
+    {
       "ID": "GameListContextMenuCreateShortcutToolTipMacOS",
       "Translations": {
         "ar_SA": "أنشئ اختصار يُشغل التطبيق المحدد في مجلد تطبيقات ‫macOS",
@@ -2793,7 +2818,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "显示兼容性项目",
         "zh_TW": ""
       }
     },
@@ -2818,7 +2843,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "在兼容性列表中显示选定的游戏,您通常可以通过帮助菜单访问。",
         "zh_TW": ""
       }
     },
@@ -2843,7 +2868,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "显示游戏信息",
         "zh_TW": ""
       }
     },
@@ -2868,7 +2893,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "显示当前选定游戏的状态与详细信息。",
         "zh_TW": ""
       }
     },
@@ -3295,6 +3320,31 @@
         "uk_UA": "Налаштування",
         "zh_CN": "设置",
         "zh_TW": "設定"
+      }
+    },
+    {
+      "ID": "SettingsWithInfo",
+      "Translations": {
+        "ar_SA": "{0} - إعدادات",
+        "de_DE": "Einstellungen - {0}",
+        "el_GR": "Ρυθμίσεις - {0}",
+        "en_US": "Settings - {0}",
+        "es_ES": "Configuración - {0}",
+        "fr_FR": "Paramètres - {0}",
+        "he_IL": "{0} - הגדרות",
+        "it_IT": "Impostazioni - {0}",
+        "ja_JP": "設定 - {0}",
+        "ko_KR": "설정 - {0}",
+        "no_NO": "Innstillinger - {0}",
+        "pl_PL": "Ustawienia - {0}",
+        "pt_BR": "Configurações - {0}",
+        "ru_RU": "Параметры - {0}",
+        "sv_SE": "Inställningar - {0}",
+        "th_TH": "ตั้งค่า - {0}",
+        "tr_TR": "Ayarlar - {0}",
+        "uk_UA": "Налаштування - {0}",
+        "zh_CN": "设置 - {0}",
+        "zh_TW": "設定 - {0}"
       }
     },
     {
@@ -4518,7 +4568,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "与系统时间同步",
         "zh_TW": ""
       }
     },
@@ -6168,7 +6218,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "重置设置",
         "zh_TW": ""
       }
     },
@@ -6193,7 +6243,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "我要重置我的设置。",
         "zh_TW": ""
       }
     },
@@ -8168,7 +8218,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "彩虹滚动速度",
         "zh_TW": ""
       }
     },
@@ -13443,7 +13493,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "您正要清理 PPTC 数据:\n\n{0}\n\n您确实要继续吗?",
         "zh_TW": ""
       }
     },
@@ -23593,7 +23643,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "启动和游戏时不会出现任何崩溃或任何类型的 GPU bug 且速度足够快可以在一般 PC 上尽情游玩。",
         "zh_TW": ""
       }
     },
@@ -23618,7 +23668,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "可以成功启动并进入游戏但可能会遇到以下一种或多种问题: 崩溃、卡死、GPU bug、令人无法接受的音频,或者只是太慢。仍然可以继续进行游戏,但是可能无法达到预期。",
         "zh_TW": ""
       }
     },
@@ -23643,7 +23693,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "可以启动并通过标题画面但是无法进入到主要的游戏流程。",
         "zh_TW": ""
       }
     },
@@ -23668,7 +23718,7 @@
         "th_TH": "",
         "tr_TR": "",
         "uk_UA": "",
-        "zh_CN": "",
+        "zh_CN": "可以启动但是无法通过标题画面。",
         "zh_TW": ""
       }
     },
@@ -23679,6 +23729,31 @@
         "de_DE": "",
         "el_GR": "",
         "en_US": "Does not boot or shows no signs of activity.",
+        "es_ES": "",
+        "fr_FR": "",
+        "he_IL": "",
+        "it_IT": "",
+        "ja_JP": "",
+        "ko_KR": "",
+        "no_NO": "",
+        "pl_PL": "",
+        "pt_BR": "",
+        "ru_RU": "",
+        "sv_SE": "",
+        "th_TH": "",
+        "tr_TR": "",
+        "uk_UA": "",
+        "zh_CN": "无法启动或显示无任何动静。",
+        "zh_TW": ""
+      }
+    },
+    {
+      "ID": "UserConfigurationHeader",
+      "Translations": {
+        "ar_SA": "",
+        "de_DE": "",
+        "el_GR": "",
+        "en_US": "User Config",
         "es_ES": "",
         "fr_FR": "",
         "he_IL": "",
@@ -23719,6 +23794,56 @@
         "tr_TR": "",
         "uk_UA": "",
         "zh_CN": "选择一个要解压的 DLC",
+        "zh_TW": ""
+      }
+    },
+    {
+      "ID": "GameInfoRpcImage",
+      "Translations": {
+        "ar_SA": "",
+        "de_DE": "",
+        "el_GR": "",
+        "en_US": "Rich Presence Image",
+        "es_ES": "",
+        "fr_FR": "",
+        "he_IL": "",
+        "it_IT": "",
+        "ja_JP": "",
+        "ko_KR": "",
+        "no_NO": "",
+        "pl_PL": "",
+        "pt_BR": "",
+        "ru_RU": "",
+        "sv_SE": "",
+        "th_TH": "",
+        "tr_TR": "",
+        "uk_UA": "",
+        "zh_CN": "Rich Presence 图像",
+        "zh_TW": ""
+      }
+    },
+    {
+      "ID": "GameInfoRpcDynamic",
+      "Translations": {
+        "ar_SA": "",
+        "de_DE": "",
+        "el_GR": "",
+        "en_US": "Dynamic Rich Presence",
+        "es_ES": "",
+        "fr_FR": "",
+        "he_IL": "",
+        "it_IT": "",
+        "ja_JP": "",
+        "ko_KR": "",
+        "no_NO": "",
+        "pl_PL": "",
+        "pt_BR": "",
+        "ru_RU": "",
+        "sv_SE": "",
+        "th_TH": "",
+        "tr_TR": "",
+        "uk_UA": "",
+        "zh_CN": "动态 Rich Presence",
         "zh_TW": ""
       }
     }
