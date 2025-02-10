@@ -838,25 +838,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             CloseWindow?.Invoke();
         }
 
-        public void DeleteConfigGame()
-        {
-            string gameDir = Program.GetDirGameUserConfig(GameId,false,false);
-
-            if (File.Exists(gameDir))
-            {
-                File.Delete(gameDir);
-            }
-            RevertIfNotSaved();
-            CloseWindow?.Invoke();
-        }
-
-        public void SaveUserConfig()
-        {
-            SaveSettings();
-            RevertIfNotSaved();
-            CloseWindow?.Invoke();
-        }
-
         public void OkButton()
         {
             SaveSettings();
