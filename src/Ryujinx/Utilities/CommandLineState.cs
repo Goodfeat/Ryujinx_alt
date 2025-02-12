@@ -11,6 +11,7 @@ namespace Ryujinx.Ava.Utilities
         public static bool? OverrideHardwareAcceleration { get; private set; }
         public static string OverrideGraphicsBackend { get; private set; }
         public static string OverrideBackendThreading { get; private set; }
+        public static string OverrideBackendThreadingAfterReboot { get; private set; }
         public static string OverridePPTC { get; private set; }
         public static string OverrideMemoryManagerMode { get; private set; } 
         public static string OverrideSystemRegion { get; private set; } 
@@ -23,10 +24,6 @@ namespace Ryujinx.Ava.Utilities
         public static bool StartFullscreenArg { get; private set; }
         public static bool HideAvailableUpdates { get; private set; }
 
-        public static void ArgumentsClean()
-        {
-
-        }
 
         public static void ParseArguments(string[] args)
         {
@@ -98,6 +95,16 @@ namespace Ryujinx.Ava.Utilities
                         }
 
                         OverrideBackendThreading = args[++i];
+                        break;
+                    case "--bt":
+                        if (i + 1 >= args.Length)
+                        {
+                            Logger.Error?.Print(LogClass.Application, $"Invalid option '{arg}'");
+
+                            continue;
+                        }
+
+                        OverrideBackendThreadingAfterReboot = args[++i];
                         break;
                     case "--pptc":
                         if (i + 1 >= args.Length)

@@ -15,6 +15,7 @@ using Ryujinx.Ava.UI.Models.Input;
 using Ryujinx.Ava.UI.Windows;
 using Ryujinx.Ava.Utilities.Configuration;
 using Ryujinx.Ava.Utilities.Configuration.System;
+using Ryujinx.Ava.Utilities.Configuration.UI;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.GraphicsDriver;
@@ -73,45 +74,16 @@ namespace Ryujinx.Ava.UI.ViewModels
         public string GamePath { get; }
         public string GameName { get; }
 
+        private readonly bool _isGameRunning;
         private Bitmap _gameIcon;
         private string _gameTitle;
+        private string _gamePath;
         private string _gameId;
-        public Bitmap GameIcon
-        {
-            get => _gameIcon;
-            set
-            {
-                if (_gameIcon != value)
-                {
-                    _gameIcon = value;
-                }
-            }
-        }
-
-        public string GameTitle
-        {
-            get => _gameTitle;
-            set
-            {
-                if (_gameTitle != value)
-                {
-                    _gameTitle = value;
-                }
-            }
-        }
-
-        public string GameId
-        {
-            get => _gameId;
-            set
-            {
-                if (_gameId != value)
-                {
-                    _gameId = value;
-                }
-            }
-        }
-
+        public bool IsGameRunning => _isGameRunning;
+        public Bitmap GameIcon => _gameIcon;
+        public string GamePath => _gamePath;
+        public string GameTitle => _gameTitle;
+        public string GameId => _gameId;
 
         public int ResolutionScale
         {
@@ -166,9 +138,12 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool RememberWindowState { get; set; }
         public bool ShowTitleBar { get; set; }
         public int HideCursor { get; set; }
+        public int UpdateCheckerType { get; set; }
         public bool EnableDockedMode { get; set; }
         public bool EnableKeyboard { get; set; }
         public bool EnableMouse { get; set; }
+        public bool DisableInputWhenOutOfFocus { get; set; }
+        
         public VSyncMode VSyncMode
         {
             get => _vSyncMode;
@@ -249,6 +224,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         public bool EnableTrace { get; set; }
         public bool EnableGuest { get; set; }
         public bool EnableFsAccessLog { get; set; }
+        public bool EnableAvaloniaLog { get; set; }
         public bool EnableDebug { get; set; }
         public bool IsOpenAlEnabled { get; set; }
         public bool IsSoundIoEnabled { get; set; }
@@ -387,8 +363,10 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public SettingsViewModel(VirtualFileSystem virtualFileSystem, 
+        public SettingsViewModel(
+            VirtualFileSystem virtualFileSystem, 
             ContentManager contentManager,
+            bool gameRunning,
             string gamePath,
             string gameName, 
             string gameId, 
@@ -402,12 +380,14 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 using (var ms = new MemoryStream(gameIconData))
                 {
-                    GameIcon = new Bitmap(ms);
+                    _gameIcon = new Bitmap(ms);
                 }
             }
 
-            GameTitle = gameName;
-            GameId = gameId;
+            _isGameRunning = gameRunning;
+            _gamePath = gamePath;
+            _gameTitle = gameName;           
+            _gameId = gameId;
 
             if (enableToLoadCustomConfig) // During the game. If there is no user config, then load the global config window
             {
@@ -424,7 +404,6 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 Task.Run(LoadTimeZones);
 
-                DirtyHacks = new SettingsHacksViewModel(this);
             }
         }
 
@@ -558,6 +537,7 @@ namespace Ryujinx.Ava.UI.ViewModels
         {
             ConfigurationState config = ConfigurationState.Instance;
 
+
             //It is necessary that the data is used from the global configuration file
             if (string.IsNullOrEmpty(GameId)) 
             {
@@ -568,7 +548,8 @@ namespace Ryujinx.Ava.UI.ViewModels
                 RememberWindowState = config.RememberWindowState;
                 ShowTitleBar = config.ShowTitleBar;
                 HideCursor = (int)config.HideCursor.Value;
-
+                UpdateCheckerType = (int)config.UpdateCheckerType.Value;
+                
                 GameDirectories.Clear();
                 GameDirectories.AddRange(config.UI.GameDirs.Value);
 
@@ -589,6 +570,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             EnableDockedMode = config.System.EnableDockedMode;
             EnableKeyboard = config.Hid.EnableKeyboard;
             EnableMouse = config.Hid.EnableMouse;
+            DisableInputWhenOutOfFocus = config.Hid.DisableInputWhenOutOfFocus;
 
             // Keyboard Hotkeys
             KeyboardHotkey = new HotkeyConfig(config.Hid.Hotkeys.Value);
@@ -654,6 +636,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             EnableGuest = config.Logger.EnableGuest;
             EnableDebug = config.Logger.EnableDebug;
             EnableFsAccessLog = config.Logger.EnableFsAccessLog;
+            EnableAvaloniaLog = config.Logger.EnableAvaloniaLog;
             FsGlobalAccessLogMode = config.System.FsGlobalAccessLogMode;
             OpenglDebugLevel = (int)config.Logger.GraphicsDebugLevel.Value;
 
@@ -668,6 +651,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             ConfigurationState config = ConfigurationState.Instance;
             bool userConfigFile = string.IsNullOrEmpty(GameId);
 
+
             if (userConfigFile)
             {
                 // User Interface
@@ -677,6 +661,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 config.RememberWindowState.Value = RememberWindowState;
                 config.ShowTitleBar.Value = ShowTitleBar;
                 config.HideCursor.Value = (HideCursorMode)HideCursor;
+                config.UpdateCheckerType.Value = (UpdaterType)UpdateCheckerType;
 
                 if (GameDirectoryChanged)
                 {
@@ -701,6 +686,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.System.EnableDockedMode.Value = EnableDockedMode;
             config.Hid.EnableKeyboard.Value = EnableKeyboard;
             config.Hid.EnableMouse.Value = EnableMouse;
+            config.Hid.DisableInputWhenOutOfFocus.Value = DisableInputWhenOutOfFocus;
 
             // Keyboard Hotkeys
             config.Hid.Hotkeys.Value = KeyboardHotkey.GetConfig();
@@ -777,6 +763,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             config.Logger.EnableGuest.Value = EnableGuest;
             config.Logger.EnableDebug.Value = EnableDebug;
             config.Logger.EnableFsAccessLog.Value = EnableFsAccessLog;
+            config.Logger.EnableAvaloniaLog.Value = EnableAvaloniaLog;
             config.System.FsGlobalAccessLogMode.Value = FsGlobalAccessLogMode;
             config.Logger.GraphicsDebugLevel.Value = (GraphicsDebugLevel)OpenglDebugLevel;
 

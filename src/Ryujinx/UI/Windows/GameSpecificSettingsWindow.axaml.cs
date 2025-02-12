@@ -24,17 +24,18 @@ using Key = Avalonia.Input.Key;
 
 namespace Ryujinx.Ava.UI.Windows
 {
-    public partial class UserConfigWindows : StyleableAppWindow
+    public partial class GameSpecificSettingsWindow : StyleableAppWindow
     {
         internal readonly SettingsViewModel ViewModel;
 
-        public UserConfigWindows(MainWindowViewModel viewModel, bool findUserConfigDir = true)
+        public GameSpecificSettingsWindow(MainWindowViewModel viewModel, bool findUserConfigDir = true)
         {
             Title = string.Format(LocaleManager.Instance[LocaleKeys.SettingsWithInfo], viewModel.SelectedApplication.Name, viewModel.SelectedApplication.IdString);
 
             DataContext = ViewModel = new SettingsViewModel(
                 viewModel.VirtualFileSystem, 
                 viewModel.ContentManager,
+                viewModel.IsGameRunning,
                 viewModel.SelectedApplication.Path,
                 viewModel.SelectedApplication.Name,
                 viewModel.SelectedApplication.IdString,
@@ -46,7 +47,7 @@ namespace Ryujinx.Ava.UI.Windows
 
             InitializeComponent();
             Load();
-
+           
 #if DEBUG
             this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Alt));
 #endif

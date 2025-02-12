@@ -36,6 +36,7 @@ namespace Ryujinx.Ava
         public static string GlobalConfigurationPath { get; private set; }
         public static bool PreviewerDetached { get; private set; }
         public static bool UseHardwareAcceleration { get; private set; }
+        public static string BackendThreadingArg { get; private set; }
 
         [LibraryImport("user32.dll", SetLastError = true)]
         public static partial int MessageBoxA(nint hWnd, [MarshalAs(UnmanagedType.LPStr)] string text, [MarshalAs(UnmanagedType.LPStr)] string caption, uint type);
@@ -251,6 +252,11 @@ namespace Ryujinx.Ava
                     _ => ConfigurationState.Instance.Graphics.BackendThreading
                 };
 
+            if (CommandLineState.OverrideBackendThreadingAfterReboot is not null)
+            {
+                BackendThreadingArg = CommandLineState.OverrideBackendThreadingAfterReboot;
+            }
+
             // Check if docked mode was overriden.
             if (CommandLineState.OverrideDockedMode.HasValue)
                 ConfigurationState.Instance.System.EnableDockedMode.Value = CommandLineState.OverrideDockedMode.Value;
@@ -294,7 +300,7 @@ namespace Ryujinx.Ava
                     ConfigurationState.Instance.System.Language.Value = (Utilities.Configuration.System.Language)result;
                 }
 
-            // Check if hardware-acceleration was overridden. MemoryManagerMode ( outdated! )
+            // Check if hardware-acceleration was overridden.
             if (CommandLineState.OverrideHardwareAcceleration != null)
                 UseHardwareAcceleration = CommandLineState.OverrideHardwareAcceleration.Value;
         }

@@ -7,6 +7,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using DynamicData;
 using DynamicData.Binding;
 using FluentAvalonia.UI.Controls;
@@ -104,6 +105,13 @@ namespace Ryujinx.Ava.UI.ViewModels
         [ObservableProperty] private bool _isSubMenuOpen;
         [ObservableProperty] private ApplicationContextMenu _listAppContextMenu;
         [ObservableProperty] private ApplicationContextMenu _gridAppContextMenu;
+        [ObservableProperty] private bool _updateAvailable;
+
+        public static AsyncRelayCommand UpdateCommand { get; } = Commands.Create(async () =>
+        {
+            if (Updater.CanUpdate(true))
+                await Updater.BeginUpdateAsync(true);
+        });
         
         private bool _showLoadProgress;
         private bool _isGameRunning;
@@ -1147,10 +1155,10 @@ namespace Ryujinx.Ava.UI.ViewModels
                 List<string> dirs = result.Select(it => it.Path.LocalPath).ToList();
                 int numAdded = onDirsSelected(dirs, out int numRemoved);
 
-                string msg = String.Join("\r\n", new string[] {
+                string msg = string.Join("\n",
                     string.Format(LocaleManager.Instance[localeMessageRemovedKey], numRemoved),
                     string.Format(LocaleManager.Instance[localeMessageAddedKey], numAdded)
-                });
+                );
 
                 await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
@@ -1523,10 +1531,16 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
         }
 
-        public void InitializeUserConfig(ApplicationData application)
+        public bool InitializeUserConfig(ApplicationData application)
         {
-            // Code where conditions will be met before loading the user configuration        
+            // Code where conditions will be met before loading the user configuration (Global Config)      
             BackendThreading backendThreadingValue = ConfigurationState.Instance.Graphics.BackendThreading.Value;
+            string BackendThreadingInit = Program.BackendThreadingArg;
+
+            if (BackendThreadingInit is null)
+            {
+                BackendThreadingInit = ConfigurationState.Instance.Graphics.BackendThreading.Value.ToString();
+            }
 
             // If a configuration is found in the "/games/xxxxxxxxxxxxxx" folder, the program will load the user setting. 
             string idGame = application.IdBaseString;
@@ -1537,19 +1551,29 @@ namespace Ryujinx.Ava.UI.ViewModels
             }
 
             // Code where conditions will be executed after loading user configuration
-            if (ConfigurationState.Instance.Graphics.BackendThreading != backendThreadingValue)
+            if (ConfigurationState.Instance.Graphics.BackendThreading.Value.ToString() != BackendThreadingInit)
             {
-                /*                 
-                 * The function to restart the emulator together with the selected game
-                Task.Run(async () => await Rebooter.RebootAppWithGame(application.Path)); 
-                */
+
+                List<string> Arguments = new List<string>
+                {
+                    "--bt", ConfigurationState.Instance.Graphics.BackendThreading.Value.ToString() // BackendThreading
+                };
+
+                Rebooter.RebootAppWithGame(application.Path, Arguments);
+ 
+                return true;
             }
+
+            return false;
         }
 
         public async Task LoadApplication(ApplicationData application, bool startFullscreen = false, BlitStruct<ApplicationControlProperty>? customNacpData = null)
         {
 
-            InitializeUserConfig(application);
+            if (InitializeUserConfig(application))
+            {
+                return;
+            }
 
             if (AppHost != null)
             {
