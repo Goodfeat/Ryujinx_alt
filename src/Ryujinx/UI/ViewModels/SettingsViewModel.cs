@@ -71,8 +71,6 @@ namespace Ryujinx.Ava.UI.ViewModels
         [ObservableProperty] private string _ldnServer;
 
         public SettingsHacksViewModel DirtyHacks { get; }
-        public string GamePath { get; }
-        public string GameName { get; }
 
         private readonly bool _isGameRunning;
         private Bitmap _gameIcon;
