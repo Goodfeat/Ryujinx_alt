@@ -355,6 +355,11 @@ namespace Ryujinx.Ava.UI.ViewModels
                     _ => null,
                 };
             }
+            set 
+            {
+                ListSelectedApplication = value;
+                GridSelectedApplication = value;
+            }               
         }
 
         public bool HasCompatibilityEntry => SelectedApplication.HasPlayabilityInfo;
@@ -1541,6 +1546,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 BackendThreadingInit = ConfigurationState.Instance.Graphics.BackendThreading.Value.ToString();
             }
+            
 
             // If a configuration is found in the "/games/xxxxxxxxxxxxxx" folder, the program will load the user setting. 
             string idGame = application.IdBaseString;
@@ -1556,7 +1562,8 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 List<string> Arguments = new List<string>
                 {
-                    "--bt", ConfigurationState.Instance.Graphics.BackendThreading.Value.ToString() // BackendThreading
+                    "--bt", ConfigurationState.Instance.Graphics.BackendThreading.Value.ToString(), // BackendThreading
+                    //"-i", application.IdBaseString
                 };
 
                 Rebooter.RebootAppWithGame(application.Path, Arguments);
