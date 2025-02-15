@@ -49,15 +49,16 @@ namespace Ryujinx.Ava.Utilities.Configuration
                 configurationFileUpdated = true;
             }
             
-
+          
             EnableDiscordIntegration.Value = shouldLoadFromFile ? cff.EnableDiscordIntegration : EnableDiscordIntegration.Value; // Get from global config only
             CheckUpdatesOnStart.Value = shouldLoadFromFile ? cff.CheckUpdatesOnStart : CheckUpdatesOnStart.Value; // Get from global config only
             UpdateCheckerType.Value = shouldLoadFromFile ? cff.UpdateCheckerType : UpdateCheckerType.Value; // Get from global config only
+            FocusLostActionType.Value = cff.FocusLostActionType;
             ShowConfirmExit.Value = shouldLoadFromFile ? cff.ShowConfirmExit : ShowConfirmExit.Value; // Get from global config only
             RememberWindowState.Value = shouldLoadFromFile ? cff.RememberWindowState : RememberWindowState.Value; // Get from global config only
             ShowTitleBar.Value = shouldLoadFromFile ? cff.ShowTitleBar : ShowTitleBar.Value; // Get from global config only
             EnableHardwareAcceleration.Value = shouldLoadFromFile ? cff.EnableHardwareAcceleration : EnableHardwareAcceleration.Value; // Get from global config only
-            HideCursor.Value = shouldLoadFromFile ? cff.HideCursor : HideCursor.Value; // Get from global config only
+            HideCursor.Value = cff.HideCursor;
           
             Logger.EnableFileLog.Value = cff.EnableFileLog;
             Logger.EnableDebug.Value = cff.LoggingEnableDebug;
@@ -94,6 +95,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
             System.Region.Value = cff.SystemRegion;
             System.TimeZone.Value = cff.SystemTimeZone;
             System.SystemTimeOffset.Value = shouldLoadFromFile ? cff.SystemTimeOffset : System.SystemTimeOffset.Value; // Get from global config only
+            System.MatchSystemTime.Value = shouldLoadFromFile ? cff.MatchSystemTime : System.MatchSystemTime.Value; // Get from global config only
             System.EnableDockedMode.Value = cff.DockedMode;
             System.EnablePtc.Value = cff.EnablePtc;
             System.EnableLowPowerPtc.Value = cff.EnableLowPowerPtc;
@@ -105,7 +107,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
             System.MemoryManagerMode.Value = cff.MemoryManagerMode;
             System.DramSize.Value = cff.DramSize;
             System.IgnoreMissingServices.Value = cff.IgnoreMissingServices;
-            System.IgnoreApplet.Value = cff.IgnoreApplet;
+            System.IgnoreControllerApplet.Value = cff.IgnoreApplet;
             System.UseHypervisor.Value = cff.UseHypervisor;
 
             UI.GuiColumns.FavColumn.Value = shouldLoadFromFile ? cff.GuiColumns.FavColumn : UI.GuiColumns.FavColumn.Value;
@@ -443,7 +445,8 @@ namespace Ryujinx.Ava.Utilities.Configuration
                 (63, static cff => cff.MatchSystemTime = false),
                 (64, static cff => cff.LoggingEnableAvalonia = false),
                 (65, static cff => cff.UpdateCheckerType = cff.CheckUpdatesOnStart ? UpdaterType.PromptAtStartup : UpdaterType.Off),
-                (66, static cff => cff.DisableInputWhenOutOfFocus = false)
+                (66, static cff => cff.DisableInputWhenOutOfFocus = false),
+                (67, static cff => cff.FocusLostActionType = cff.DisableInputWhenOutOfFocus ? FocusLostType.BlockInput : FocusLostType.DoNothing)
             );
     }
 }

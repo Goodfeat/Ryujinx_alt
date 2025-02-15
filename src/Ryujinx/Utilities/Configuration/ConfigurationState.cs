@@ -53,10 +53,12 @@ namespace Ryujinx.Ava.Utilities.Configuration
                 SystemRegion = System.Region,
                 SystemTimeZone = System.TimeZone,
                 SystemTimeOffset = System.SystemTimeOffset,
+                MatchSystemTime = System.MatchSystemTime,
                 DockedMode = System.EnableDockedMode,
                 EnableDiscordIntegration = EnableDiscordIntegration,
                 CheckUpdatesOnStart = CheckUpdatesOnStart,
                 UpdateCheckerType = UpdateCheckerType,
+                FocusLostActionType = FocusLostActionType,
                 ShowConfirmExit = ShowConfirmExit,
                 RememberWindowState = RememberWindowState,
                 ShowTitleBar = ShowTitleBar,
@@ -79,7 +81,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
                 MemoryManagerMode = System.MemoryManagerMode,
                 DramSize = System.DramSize,
                 IgnoreMissingServices = System.IgnoreMissingServices,
-                IgnoreApplet = System.IgnoreApplet,
+                IgnoreApplet = System.IgnoreControllerApplet,
                 UseHypervisor = System.UseHypervisor,
                 GuiColumns = new GuiColumns
                 {
@@ -178,6 +180,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
             System.EnableDockedMode.Value = true;
             EnableDiscordIntegration.Value = true;
             UpdateCheckerType.Value = UpdaterType.PromptAtStartup;
+            FocusLostActionType.Value = FocusLostType.DoNothing;
             ShowConfirmExit.Value = true;
             RememberWindowState.Value = true;
             ShowTitleBar.Value = !OperatingSystem.IsWindows();
@@ -202,7 +205,7 @@ namespace Ryujinx.Ava.Utilities.Configuration
             System.MemoryManagerMode.Value = MemoryManagerMode.HostMappedUnsafe;
             System.DramSize.Value = MemoryConfiguration.MemoryConfiguration4GiB;
             System.IgnoreMissingServices.Value = false;
-            System.IgnoreApplet.Value = false;
+            System.IgnoreControllerApplet.Value = false;
             System.UseHypervisor.Value = true;
             Multiplayer.LanInterfaceId.Value = "0";
             Multiplayer.Mode.Value = MultiplayerMode.Disabled;
