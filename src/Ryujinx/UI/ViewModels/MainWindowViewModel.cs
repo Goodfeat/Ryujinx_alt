@@ -798,7 +798,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             return false;
         }
 
-        private async Task HandleFirmwareInstallation(string filename)
+        public async Task HandleFirmwareInstallation(string filename)
         {
             try
             {
@@ -1350,6 +1350,25 @@ namespace Ryujinx.Ava.UI.ViewModels
         public void OpenRyujinxFolder()
         {
             OpenHelper.OpenFolder(AppDataManager.BaseDirPath);
+        }
+
+        public void OpenScreenshotsFolder()
+        {
+            string screenshotsDir = Path.Combine(AppDataManager.BaseDirPath, "screenshots");
+
+            try
+            {
+                if (!Directory.Exists(screenshotsDir))
+                    Directory.CreateDirectory(screenshotsDir);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error?.Print(LogClass.Application, $"Failed to create directory at path {screenshotsDir}. Error : {ex.GetType().Name}", "Screenshot");
+
+                return;
+            }
+            
+            OpenHelper.OpenFolder(screenshotsDir);
         }
 
         public void OpenLogsFolder()
