@@ -339,20 +339,11 @@
         <Setter Property="Margin"
                 Value="0,5,0,0" />
     </Style>
-    <Style Selector="TextBlock.pending" >
-        <Setter Property="Foreground" Value="SlateGray"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="HorizontalAlignment" Value="Left"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Text" Value="(pending!)"/>
-    </Style>
-    <Style Selector="StackPanel.globalConfigMarker">
-    </Style>
     <Style Selector="TextBlock.globalConfigMarker" >
         <Setter Property="Foreground" Value="SeaGreen"/>
         <Setter Property="Margin" Value="5,0,0,0"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Text" Value="(Global)"/>  
+        <Setter Property="Text" Value="{ext:Locale GameSpecificConfigurationGlobal}"/>  
     </Style>
     <Style Selector="StackPanel.globalConfigMarker">
     </Style>

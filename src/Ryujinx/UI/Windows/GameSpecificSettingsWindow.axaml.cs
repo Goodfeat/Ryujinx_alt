@@ -47,11 +47,6 @@ namespace Ryujinx.Ava.UI.Windows
 
             InitializeComponent();
             Load();
-           
-#if DEBUG
-            this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Alt));
-#endif
-           
         }
 
         public void SaveSettings()
@@ -65,7 +60,6 @@ namespace Ryujinx.Ava.UI.Windows
             Pages.Children.Clear();
             NavPanel.SelectionChanged += NavPanelOnSelectionChanged;
             NavPanel.SelectedItem = NavPanel.MenuItems.ElementAt(0);
-            
         }
 
         private void NavPanelOnSelectionChanged(object sender, NavigationViewSelectionChangedEventArgs e)

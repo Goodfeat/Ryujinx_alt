@@ -141,7 +141,8 @@ namespace Ryujinx.Ava.UI.ViewModels
         // For an example of this, download canary 1.2.95, then open the settings menu, and look at the icon in the top-left.
         // The border gets reduced to colored pixels in the 4 corners.
         public static readonly Bitmap IconBitmap =
-            new(Assembly.GetAssembly(typeof(MainWindowViewModel))!.GetManifestResourceStream("Ryujinx.Assets.UIImages.Logo_Ryujinx_AntiAlias.png")!);
+            new(Assembly.GetAssembly(typeof(MainWindowViewModel))!
+                .GetManifestResourceStream("Ryujinx.Assets.UIImages.Logo_Ryujinx_AntiAlias.png")!);
 
         public MainWindow Window { get; init; }
 
@@ -1565,7 +1566,7 @@ namespace Ryujinx.Ava.UI.ViewModels
             {
                 BackendThreadingInit = ConfigurationState.Instance.Graphics.BackendThreading.Value.ToString();
             }
-
+            
             // If a configuration is found in the "/games/xxxxxxxxxxxxxx" folder, the program will load the user setting. 
             string idGame = application.IdBaseString;
             if (ConfigurationFileFormat.TryLoad(Program.GetDirGameUserConfig(idGame), out ConfigurationFileFormat configurationFileFormat))
@@ -1580,8 +1581,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
                 List<string> Arguments = new List<string>
                 {
-                    "--bt", ConfigurationState.Instance.Graphics.BackendThreading.Value.ToString(), // BackendThreading
-                    //"-i", application.IdBaseString
+                    "--bt", ConfigurationState.Instance.Graphics.BackendThreading.Value.ToString() // BackendThreading
                 };
 
                 Rebooter.RebootAppWithGame(application.Path, Arguments);
@@ -1622,7 +1622,7 @@ namespace Ryujinx.Ava.UI.ViewModels
 
             PrepareLoadScreen();
 
-            RendererHostControl = new RendererHost(application.Id.ToString("X16"));
+            RendererHostControl = new RendererHost();
 
             AppHost = new AppHost(
                 RendererHostControl,
@@ -1747,7 +1747,7 @@ namespace Ryujinx.Ava.UI.ViewModels
                 string titleId = AppHost.Device.Processes.ActiveApplication.ProgramIdText.ToUpper();
                 AmiiboWindow window = new(ShowAll, LastScannedAmiiboId, titleId);
 
-                await window.ShowDialog(Window);
+                await StyleableAppWindow.ShowAsync(window);
 
                 if (window.IsScanned)
                 {
