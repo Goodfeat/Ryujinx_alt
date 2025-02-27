@@ -6,7 +6,7 @@ namespace Ryujinx.Common
     // DO NOT EDIT, filled by CI
     public static class ReleaseInformation
     {
-        private const string CanaryChannel = "canary";
+        private const string CanaryChannel = "nightly-canary";
         private const string ReleaseChannel = "release";
 
         private const string BuildVersion = "%%RYUJINX_BUILD_VERSION%%";
