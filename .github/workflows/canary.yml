@@ -60,7 +60,7 @@ jobs:
             # Nightly Canary builds:
   
             These builds are intended for testing new features. They may be fully functional or partially broken.
-            Use [GreemDev build](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_ORIG_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_ORIG_CHANNEL_REPO }}/releases/latest) instead if that sounds like something you don't want to deal with.
+            Use [GreemDev build](https://github.com/${{env.RYUJINX_TARGET_RELEASE_ORIG_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_ORIG_CHANNEL_SOURCE_REPO }}/releases/latest) instead if that sounds like something you don't want to deal with.
             
             | Platform | Artifact |
             |--|--|
