@@ -52,21 +52,21 @@ jobs:
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          name: "Canary ${{ steps.version_info.outputs.build_version }}"
+          name: "Nightly Canary ${{ steps.version_info.outputs.build_version }}"
           tag: ${{ steps.version_info.outputs.build_version }}
           body: |            
-            # Canary builds:
+            # Nightly Canary builds:
             
             These builds are experimental and may sometimes not work, use [regular builds](https://github.com/${{ github.repository }}/releases/latest) instead if that sounds like something you don't want to deal with.
             
             | Platform | Artifact |
             |--|--|
-            | Windows 64-bit | [Canary Windows Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-win_x64.zip) |
-            | Linux 64-bit | [Canary Linux Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz) |
-            | Linux ARM 64-bit | [Canary Linux ARM Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-linux_arm64.tar.gz) |
-            | macOS | [Canary macOS Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-macos_universal.app.tar.gz) |
+            | Windows 64-bit | [Nightly Canary Windows Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-win_x64.zip) |
+            | Linux 64-bit | [Nightly Canary Linux Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz) |
+            | Linux ARM 64-bit | [Nightly Canary Linux ARM Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-linux_arm64.tar.gz) |
+            | macOS | [Nightly Canary macOS Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-macos_universal.app.tar.gz) |
             
-            **Full Changelog**: https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_SOURCE_REPO }}/compare/Canary-${{ steps.version_info.outputs.prev_build_version }}...Canary-${{ steps.version_info.outputs.build_version }}
+            **Full Changelog**: https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_SOURCE_REPO }}/compare/Nightly Canary-${{ steps.version_info.outputs.prev_build_version }}...Nightly Canary-${{ steps.version_info.outputs.build_version }}
           omitBodyDuringUpdate: true
           owner: ${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}
           repo: ${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}
@@ -108,7 +108,7 @@ jobs:
           sed -r --in-place 's/\%\%RYUJINX_TARGET_RELEASE_CHANNEL_REPO\%\%/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/g;' src/Ryujinx.Common/ReleaseInformation.cs
           sed -r --in-place 's/\%\%RYUJINX_TARGET_RELEASE_CHANNEL_SOURCE_REPO\%\%/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_SOURCE_REPO }}/g;' src/Ryujinx.Common/ReleaseInformation.cs
           sed -r --in-place 's/\%\%RYUJINX_CONFIG_FILE_NAME\%\%/Config\.json/g;' src/Ryujinx.Common/ReleaseInformation.cs
-          sed -r --in-place '/^Name=Ryujinx$/s/Name=Ryujinx/Name=Ryujinx-Canary/' distribution/linux/Ryujinx.desktop          
+          sed -r --in-place '/^Name=Ryujinx$/s/Name=Ryujinx/Name=Ryujinx-Nightly-Canary/' distribution/linux/Ryujinx.desktop          
         shell: bash
 
       - name: Create output dir
@@ -165,7 +165,7 @@ jobs:
             exit 1
           fi
 
-          export UFLAG="gh-releases-zsync|${{ github.repository_owner }}|Canary-Releases|latest|*-$ARCH_NAME.AppImage.zsync"
+          export UFLAG="gh-releases-zsync|${{ github.repository_owner }}|Nightly Canary-Releases|latest|*-$ARCH_NAME.AppImage.zsync"
           BUILDDIR=publish OUTDIR=publish_appimage distribution/linux/appimage/build-appimage.sh
 
           pushd publish_appimage
@@ -181,18 +181,18 @@ jobs:
           artifacts: "release_output/*.tar.gz,release_output/*.zip,release_output/*AppImage*"
           tag: ${{ steps.version_info.outputs.build_version }}
           body: |
-            # Canary builds:
+            # Nightly Canary builds:
             
             These builds are experimental and may sometimes not work, use [regular builds](https://github.com/${{ github.repository }}/releases/latest) instead if that sounds like something you don't want to deal with.
             
             | Platform | Artifact |
             |--|--|
-            | Windows 64-bit | [Canary Windows Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-win_x64.zip) |
-            | Linux 64-bit | [Canary Linux Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz) |
-            | Linux ARM 64-bit | [Canary Linux ARM Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-linux_arm64.tar.gz) |
-            | macOS | [Canary macOS Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-macos_universal.app.tar.gz) |
+            | Windows 64-bit | [Nightly Canary Windows Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-win_x64.zip) |
+            | Linux 64-bit | [Nightly Canary Linux Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-linux_x64.tar.gz) |
+            | Linux ARM 64-bit | [Nightly Canary Linux ARM Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-linux_arm64.tar.gz) |
+            | macOS | [Nightly Canary macOS Artifact](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_REPO }}/releases/download/${{ steps.version_info.outputs.build_version }}/ryujinx-nightly-canary-${{ steps.version_info.outputs.build_version }}-macos_universal.app.tar.gz) |
             
-            **Full Changelog**: https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_SOURCE_REPO }}/compare/Canary-${{ steps.version_info.outputs.prev_build_version }}...Canary-${{ steps.version_info.outputs.build_version }}
+            **Full Changelog**: https://github.com/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_CHANNEL_SOURCE_REPO }}/compare/Nightly-Canary-${{ steps.version_info.outputs.prev_build_version }}...Nightly-Canary-${{ steps.version_info.outputs.build_version }}
           omitBodyDuringUpdate: true
           allowUpdates: true
           replacesArtifacts: true
@@ -252,7 +252,7 @@ jobs:
       - name: Pushing new release
         uses: ncipollo/release-action@v1
         with:
-          name: "Canary ${{ steps.version_info.outputs.build_version }}"
+          name: "Nightly Canary ${{ steps.version_info.outputs.build_version }}"
           artifacts: "publish_ava/*.tar.gz"
           tag: ${{ steps.version_info.outputs.build_version }}
           body: ""
