@@ -24,6 +24,8 @@ env:
   RYUJINX_TARGET_RELEASE_CHANNEL_OWNER: "Goodfeat"
   RYUJINX_TARGET_RELEASE_CHANNEL_SOURCE_REPO: "Ryujinx_alt"
   RYUJINX_TARGET_RELEASE_CHANNEL_REPO: "Ruy-Nightly-Canary"
+  RYUJINX_TARGET_RELEASE_ORIG_CHANNEL_OWNER: "Ryubing"
+  RYUJINX_TARGET_RELEASE_ORIG_CHANNEL_SOURCE_REPO: "Ryujinx"
   RELEASE: 1
 
 jobs:
@@ -56,8 +58,9 @@ jobs:
           tag: ${{ steps.version_info.outputs.build_version }}
           body: |            
             # Nightly Canary builds:
-            
-            These builds are experimental and may sometimes not work, use [regular builds](https://github.com/${{ github.repository }}/releases/latest) instead if that sounds like something you don't want to deal with.
+  
+            These builds are intended for testing new features. They may be fully functional or partially broken.
+            Use [GreemDev build](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_ORIG_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_ORIG_CHANNEL_REPO }}/releases/latest) instead if that sounds like something you don't want to deal with.
             
             | Platform | Artifact |
             |--|--|
@@ -183,7 +186,8 @@ jobs:
           body: |
             # Nightly Canary builds:
             
-            These builds are experimental and may sometimes not work, use [regular builds](https://github.com/${{ github.repository }}/releases/latest) instead if that sounds like something you don't want to deal with.
+            These builds are intended for testing new features. They may be fully functional or partially broken.
+            Use [GreemDev build](https://github.com/${{ env.RYUJINX_TARGET_RELEASE_ORIG_CHANNEL_OWNER }}/${{ env.RYUJINX_TARGET_RELEASE_ORIG_CHANNEL_REPO }}/releases/latest) instead if that sounds like something you don't want to deal with.
             
             | Platform | Artifact |
             |--|--|
