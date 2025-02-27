@@ -201,7 +201,7 @@ namespace Ryujinx.Ava
                 ConfigurationPath = appDataConfigurationPath;
             }
 
-            if (ConfigurationPath == null) 
+            if (ConfigurationPath == null)
             {
                 // No configuration, we load the default values and save it to disk
                 ConfigurationPath = appDataConfigurationPath;
